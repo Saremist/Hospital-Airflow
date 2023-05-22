@@ -12,26 +12,30 @@ function setup() {
     createCanvas(m_width, m_height);
     allocate_cells();
     background(255);
-    square(60, 100, 20);
+    // square(60, 100, 20);
     // line(0, 0, 80, 80);
+    // fill(0);
     ellipse(200, 200, 161, 80);
     find_walls();
     next_cells = Clone(cells);
+    frameRate(60);
 }
 
 
 function draw() {
-    noLoop();
+    if (frameCount > 20)
+        noLoop();
     draw_grid();
-    for (let y = 0; y < y_res; ++y) {
-        for (let x = 0; x < x_res; ++x) {
-            next_cells[y][x].updateFlow();
-            }
-            // console.log(x, y);
-        }
-    }
+    console.log(frameCount);
+    for (let y = 0; y < y_res; ++y)
+        for (let x = 0; x < x_res; ++x){
+            cells[y][x].updateFlow();}
+    console.log(cells[0][1]);
+    console.log(next_cells[0][1]);
     cells = Clone(next_cells);
 }
+
+// CELL DEFF
 
 class Cell {
     constructor({
@@ -39,8 +43,6 @@ class Cell {
         y = -1,
         type = 'ff'
     } = {}) {
-        this.flow_left = 0;
-        this.flow_top = 0;
         this.flow_right = 0;
         this.flow_bottom = 0;
         this.setType(type);
@@ -62,47 +64,14 @@ class Cell {
         }
     }
 
-    setAdjacent({
-        top = null,
-        left = null,
-        right = null,
-        bottom = null
-    } = {}) {
-        this.a_top = top ? top : this.a_top;
-        this.a_left = left ? left : this.a_left;
-        this.a_bottom = bottom ? bottom : this.a_bottom;
-        this.a_right = right ? right : this.a_right;
-    }
-
     setFlow({
-        top = null,
-        left = null,
         right = null,
         bottom = null
     } = {}) {
-        this.flow_top = top ? top : this.flow_top;
-        this.flow_left = left ? left : this.flow_left;
         this.flow_right = right ? right : this.flow_right;
         this.flow_bottom = bottom ? bottom : this.bottom;
     }
 
-    _getFlowTopLeft() {
-        try {
-            // console.log(cells[this.y - 1][this.x].getType());
-            this.flow_top = cells[this.y - 1][this.x].flow_bottom;
-        } catch (TypeError) {
-            this.flow_top = 0;
-        }
-        try {
-            this.flow_left = cells[this.y][this.x - 1].flow_right;
-        } catch (TypeError) {
-            this.flow_left = 0;
-        }
-    }
-
-    _wallFlow() {
-        return "Nope!!!!!!!!!!!!";
-    }
 
     getType() {
         return this.type;
@@ -119,44 +88,124 @@ class Cell {
             case 'src':
                 return [0, 255, 0, 255];
             case 'ff':
-                // return (this.getEdgesCount() * 255 / 4);
-                return (this.getDiv() > 1 ? 0 : this.getDiv() * 255);
+                // return (this.getEdgesCount() * 255 /4 );
+                return (this.getDiv() > 1 ? 0 : this.getDiv() + 0.5 * 255);
         }
     }
 
     updateFlow() {
-        this._getFlowTopLeft();
-        if (this.type != 'src') this.decompress();
-        else if (this.type == 'wa') this.decompress();
-        else if (this.type == 'src') this.decompress();
-        // return this.getDiv();
+        switch (this.getType()) {
+            case 'ff':
+                this.decompress();
+                break;
+            case 'wa':
+                this.decompress();
+                break;
+            case 'src':
+                break;
+                // return this.getDiv();}
+        }
     }
 
     getDiv() {
-        let sum = this.flow_left ? this.flow_left : 0;
-        sum += this.flow_top ? this.flow_top : 0;
+        let sum = this.getFlow("left") ? this.getFlow("left") : 0;
+        sum += this.getFlow("top") ? this.getFlow("top") : 0;
         sum -= this.flow_right ? this.flow_right : 0;
         sum -= this.flow_bottom ? this.flow_bottom : 0;
         return sum;
     }
+
+    getFlow(direction) {
+        let flow;
+        try {
+            switch (direction) {
+                case "top":
+                    this.top_flow = this.getCell("top").getFlow('bottom');
+                    flow = this.top_flow;
+                    break;
+                case "bottom":
+                    flow = this.flow_bottom;
+                    break;
+                case "left":
+                    this.left_flow = this.getCell("left").getFlow('right');
+                    flow = this.left_flow;
+                    break;
+                case "right":
+                    flow = this.flow_right;
+                    break;
+                default:
+                    throw TypeError("wrong direction selected");
+            }
+            return copy(flow);
+        } catch (TypeError) {
+            return false;
+        }
+    }
+
+
     decompress() {
         let div = this.getDiv();
         let edges = this.getEdgesCount();
-        if (edges != 0) {
-            this.flow_left += (div / edges) * this.over_relax;
-            this.flow_top += (div / edges) * this.over_relax;
-            this.flow_right -= (div / edges) * this.over_relax;
-            this.flow_bottom -= (div / edges) * this.over_relax;
+        let tempCell;
+        try {
+            tempCell = clone(this.getCell("left"));
+            if (tempCell.getType() == "ff") {
+                tempCell.flow_right -= (div / edges) * this.over_relax;
+                next_cells[this.y][this.x - 1] = clone(tempCell);
+            }
+        } catch (TypeError) {}
+        try {
+            let tempCell = clone(this.getCell("top"));
+            if (tempCell.getType() == "ff") {
+                tempCell.flow_bottom -= (div / edges) * this.over_relax;
+            }
+            next_cells[this.y - 1][this.x] = clone(tempCell);
+        } catch (TypeError) {}
+        try {
+            next_cells[this.y][this.x].flow_right += (div / edges) * this.over_relax;
+        } catch (TypeError) {}
+        try {
+            next_cells[this.y][this.x].flow_bottom += (div / edges) * this.over_relax;
+        } catch (TypeError) {}
+    }
+
+    getCell(direction) {
+        switch (direction) {
+            case "top":
+                return cells[y - 1][x];
+            case "bottom":
+                return cells[y + 1][x];
+            case "left":
+                return cells[y][x - 1];
+            case "right":
+                return cells[y][x + 1];
+            default:
+                throw TypeError("wrong direction selected");
         }
     }
+    getNextCell(direction) {
+        switch (direction) {
+            case "top":
+                return clone(next_cells[y - 1][x]);
+            case "bottom":
+                return clone(next_cells[y + 1][x]);
+            case "left":
+                return clone(next_cells[y][x - 1]);
+            case "right":
+                return clone(next_cells[y][x + 1]);
+            default:
+                throw TypeError("wrong direction selected");
+        }
+    }
+
+
     getEdgesCount() { // work 
         // if (this.edges) return this.edges;
         let edges = 0;
         edges += (this.x > 0 && cells[this.y][this.x - 1].getType() == 'ff') ? 1 : 0;
-        edges += (this.x < x_res - 1 && cells[this.y][this.x + 1].getType() == 'ff') ? 1 : 0;
-        edges += (this.y > 0 && cells[this.y - 1][this.x].getType() == 'ff') ? 1 : 0;
-        edges += (this.y < y_res - 1 && cells[this.y + 1][this.x].getType() == 'ff') ? 1 : 0;
-        this.edges = edges;
+        edges += (this.x == x_res - 1 || this.x < x_res - 1 && cells[this.y][this.x + 1].getType() == 'ff') ? 1 : 0;
+        edges += (this.y == 0 || this.y > 0 && cells[this.y - 1][this.x].getType() == 'ff') ? 1 : 0;
+        edges += (this.y == y_res - 1 || this.y < y_res - 1 && cells[this.y + 1][this.x].getType() == 'ff') ? 1 : 0;
         return edges;
     }
 }
