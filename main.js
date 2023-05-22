@@ -5,39 +5,51 @@ let m_height = 400;
 let px_size_x = m_width / x_res;
 let px_size_y = m_height / y_res;
 let cells = initialize_arr(x_res, y_res, 0);
+let next_cells;
 
 
 function setup() {
     createCanvas(m_width, m_height);
     allocate_cells();
+    background(255);
+    square(60, 100, 20);
+    // line(0, 0, 80, 80);
+    ellipse(200, 200, 161, 80);
+    find_walls();
+    next_cells = Clone(cells);
 }
 
+
 function draw() {
-    noLoop(background(255));
-    noLoop(square(60, 100, 20));
-    noLoop(line(0, 0, 80, 80));
-    noLoop(ellipse(200, 200, 161, 80));
-    noLoop(find_walls());
+    noLoop();
     draw_grid();
-    console.log(cells[10][0].updateFlow());
-    console.log(cells[10][0].type);
-    console.log(cells[10][1].updateFlow());
+    for (let y = 0; y < y_res; ++y) {
+        for (let x = 0; x < x_res; ++x) {
+            next_cells[y][x].updateFlow();
+            }
+            // console.log(x, y);
+        }
+    }
+    cells = Clone(next_cells);
 }
 
 class Cell {
     constructor({
-        x,
-        y,
+        x = -1,
+        y = -1,
         type = 'ff'
     } = {}) {
-        this.x = x;
-        this.y = y;
         this.flow_left = 0;
         this.flow_top = 0;
         this.flow_right = 0;
         this.flow_bottom = 0;
         this.setType(type);
-
+        this.setCords(x, y);
+        this.over_relax = 1.0;
+    }
+    setCords(x, y) {
+        this.x = x;
+        this.y = y;
     }
 
     setType(type) {
@@ -74,18 +86,32 @@ class Cell {
         this.flow_bottom = bottom ? bottom : this.bottom;
     }
 
-    _getFlowTopLeft(topCell, leftCell) {
-        if (topCell) {
-            this.flow_top = topCell.flow_bottom;
-        } else {
+    _getFlowTopLeft() {
+        try {
+            // console.log(cells[this.y - 1][this.x].getType());
+            this.flow_top = cells[this.y - 1][this.x].flow_bottom;
+        } catch (TypeError) {
             this.flow_top = 0;
         }
-        if (leftCell) {
-            this.flow_left = leftCell.flow_right;
-        } else {
+        try {
+            this.flow_left = cells[this.y][this.x - 1].flow_right;
+        } catch (TypeError) {
             this.flow_left = 0;
         }
     }
+
+    _wallFlow() {
+        return "Nope!!!!!!!!!!!!";
+    }
+
+    getType() {
+        return this.type;
+    }
+
+    getXY() {
+        return (this.x, this.y);
+    }
+
     getColor() {
         switch (this.type) {
             case 'wa':
@@ -93,14 +119,17 @@ class Cell {
             case 'src':
                 return [0, 255, 0, 255];
             case 'ff':
-                return (this.getEdgesCount() * 255 / 4);
+                // return (this.getEdgesCount() * 255 / 4);
+                return (this.getDiv() > 1 ? 0 : this.getDiv() * 255);
         }
     }
 
     updateFlow() {
         this._getFlowTopLeft();
-        if (this.type != 'src')this.decompress();
-        return this.getDiv();
+        if (this.type != 'src') this.decompress();
+        else if (this.type == 'wa') this.decompress();
+        else if (this.type == 'src') this.decompress();
+        // return this.getDiv();
     }
 
     getDiv() {
@@ -113,38 +142,40 @@ class Cell {
     decompress() {
         let div = this.getDiv();
         let edges = this.getEdgesCount();
-        this.flow_left -= div / edges;
-        this.flow_top -= div / edges;
-        this.flow_right += div / edges;
-        this.flow_bottom += div / edges;
+        if (edges != 0) {
+            this.flow_left += (div / edges) * this.over_relax;
+            this.flow_top += (div / edges) * this.over_relax;
+            this.flow_right -= (div / edges) * this.over_relax;
+            this.flow_bottom -= (div / edges) * this.over_relax;
+        }
     }
-    getEdgesCount() {
-        if (this.edges) return this.edges;
+    getEdgesCount() { // work 
+        // if (this.edges) return this.edges;
         let edges = 0;
-        let x = this.x;
-        let y = this.y;
-        // console.log(cells[y][x + 1].type); // TODO getter
-        edges += (x > 0 && cells[y][x - 1].type == 'ff') ? 1 : 0;
-        edges += (x<x_res && cells[y][x + 1].type == 'ff') ? 1 : 0;
-        edges += (y>0 && cells[y-1][x].type == 'ff') ? 1 : 0;
-        edges += (y<y_res && cells[y+1][x].type == 'ff') ? 1 : 0;
+        edges += (this.x > 0 && cells[this.y][this.x - 1].getType() == 'ff') ? 1 : 0;
+        edges += (this.x < x_res - 1 && cells[this.y][this.x + 1].getType() == 'ff') ? 1 : 0;
+        edges += (this.y > 0 && cells[this.y - 1][this.x].getType() == 'ff') ? 1 : 0;
+        edges += (this.y < y_res - 1 && cells[this.y + 1][this.x].getType() == 'ff') ? 1 : 0;
         this.edges = edges;
-        // console.log(edges);
         return edges;
     }
 }
 //each cell stores ff, wa, src value deterimining its type
 
-function allocate_cells() {
+function allocate_cells() { // works
     for (let y = 0; y < y_res; ++y) {
         for (let x = 0; x < x_res; ++x) {
-            cells[y][x] = new Cell(x, y);
+            cells[y][x] = new Cell({
+                x,
+                y,
+                type: "ff"
+            });
         }
     }
 }
 
 
-function draw_grid() {
+function draw_grid() { // works
     for (let y = 0; y < y_res; ++y) {
         for (let x = 0; x < x_res; ++x) {
             b_x = x * px_size_x;
@@ -157,7 +188,7 @@ function draw_grid() {
     stroke(1);
 }
 
-function find_walls() {
+function find_walls() { // works
     for (let y = 0; y < y_res; ++y) {
         for (let x = 0; x < x_res; ++x) {
             b_x = x * px_size_x;
@@ -173,7 +204,7 @@ function find_walls() {
     }
 }
 
-function scan_pixel(b_x, b_y) {
+function scan_pixel(b_x, b_y) { // works
     for (let s_y = 0; s_y < px_size_y; ++s_y) {
         for (let s_x = 0; s_x < px_size_x; ++s_x) {
             color = get(b_x + s_x, b_y + s_y)[0];
@@ -185,6 +216,15 @@ function scan_pixel(b_x, b_y) {
     return false;
 }
 
-function initialize_arr(x, y, val) {
+function initialize_arr(x, y, val) { // works
     return [...Array(y)].map(_ => Array(x).fill(val));
+}
+
+
+function deep(source) {
+    return JSON.parse(JSON.stringify(source));
+}
+
+function Clone(arr) {
+    return arr.map((arr) => arr.slice());
 }
