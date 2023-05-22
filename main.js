@@ -1,3 +1,5 @@
+// import structuredClone from '@ungap/structured-clone';
+
 let x_res = 10;
 let y_res = 10;
 let m_width = 400;
@@ -5,7 +7,7 @@ let m_height = 400;
 let px_size_x = m_width / x_res;
 let px_size_y = m_height / y_res;
 let cells = initialize_arr(x_res, y_res, 0);
-let next_cells;
+let next_cells = initialize_arr(x_res, y_res, 0);
 
 
 function setup() {
@@ -17,22 +19,27 @@ function setup() {
     // fill(0);
     ellipse(200, 200, 161, 80);
     find_walls();
-    next_cells = Clone(cells);
+    Clone(cells, next_cells);
     frameRate(60);
 }
 
 
 function draw() {
+    draw_grid();
     if (frameCount > 20)
         noLoop();
-    draw_grid();
     console.log(frameCount);
-    for (let y = 0; y < y_res; ++y)
-        for (let x = 0; x < x_res; ++x){
-            cells[y][x].updateFlow();}
     console.log(cells[0][1]);
     console.log(next_cells[0][1]);
-    cells = Clone(next_cells);
+    for (let y = 0; y < y_res; ++y){
+        for (let x = 0; x < x_res; ++x) {
+            cells[y][x].updateFlow();
+        }
+    }
+    console.log(cells[0][1]);
+    console.log(next_cells[0][1]);
+    Clone(next_cells, cells);
+    cells[0][1].flow_right = "chuj";
 }
 
 // CELL DEFF
@@ -108,7 +115,8 @@ class Cell {
     }
 
     getDiv() {
-        let sum = this.getFlow("left") ? this.getFlow("left") : 0;
+        let sum = 0;
+        sum += this.getFlow("left") ? this.getFlow("left") : 0;
         sum += this.getFlow("top") ? this.getFlow("top") : 0;
         sum -= this.flow_right ? this.flow_right : 0;
         sum -= this.flow_bottom ? this.flow_bottom : 0;
@@ -121,24 +129,27 @@ class Cell {
             switch (direction) {
                 case "top":
                     this.top_flow = this.getCell("top").getFlow('bottom');
-                    flow = this.top_flow;
+                    flow = 0 + this.top_flow;
                     break;
                 case "bottom":
-                    flow = this.flow_bottom;
+                    flow = 0 + this.flow_bottom;
                     break;
                 case "left":
                     this.left_flow = this.getCell("left").getFlow('right');
-                    flow = this.left_flow;
+                    flow = 0 + this.left_flow;
                     break;
                 case "right":
-                    flow = this.flow_right;
+                    flow = 0 + this.flow_right;
                     break;
                 default:
                     throw TypeError("wrong direction selected");
             }
-            return copy(flow);
-        } catch (TypeError) {
-            return false;
+            return flow;
+        } catch (e) {
+            if (e instanceof TypeError)
+                return false;
+            else
+                throw e;
         }
     }
 
@@ -148,54 +159,62 @@ class Cell {
         let edges = this.getEdgesCount();
         let tempCell;
         try {
-            tempCell = clone(this.getCell("left"));
-            if (tempCell.getType() == "ff") {
-                tempCell.flow_right -= (div / edges) * this.over_relax;
-                next_cells[this.y][this.x - 1] = clone(tempCell);
+            tempCell = this.getCell("left");} catch (e) {
+            if (e instanceof TypeError) { throw e; } else {
+                throw e;
             }
-        } catch (TypeError) {}
+        }
+        if (tempCell.getType() == "ff") {
+            tempCell.flow_right -= (div / edges) * this.over_relax;
+            next_cells[this.y][this.x - 1] = tempCell;
+        }
         try {
-            let tempCell = clone(this.getCell("top"));
+            let tempCell = this.getCell("top");
             if (tempCell.getType() == "ff") {
                 tempCell.flow_bottom -= (div / edges) * this.over_relax;
             }
-            next_cells[this.y - 1][this.x] = clone(tempCell);
-        } catch (TypeError) {}
+            next_cells[this.y - 1][this.x] = tempCell;
+        } catch (e) {
+            if (e instanceof TypeError) {} else {
+                throw e;
+            }
+        }
         try {
-            next_cells[this.y][this.x].flow_right += (div / edges) * this.over_relax;
-        } catch (TypeError) {}
+            let _new = next_cells[this.y][this.x].flow_right + (div / edges) * this.over_relax;
+            next_cells[this.y][this.x].flow_right = _new;
+        } catch (e) {
+            if (e instanceof TypeError) {} else {
+                throw e;
+            }
+        }
         try {
             next_cells[this.y][this.x].flow_bottom += (div / edges) * this.over_relax;
-        } catch (TypeError) {}
+        } catch (e) {
+            if (e instanceof TypeError) {} else {
+                throw e;
+            }
+        }
     }
 
     getCell(direction) {
+        let cell;
         switch (direction) {
             case "top":
-                return cells[y - 1][x];
+                cell = cells[this.y - 1][this.x];
+                break;
             case "bottom":
-                return cells[y + 1][x];
+                cell = cells[this.y + 1][this.x];
+                break;
             case "left":
-                return cells[y][x - 1];
+                cell = cells[this.y][this.x - 1];
+                break;
             case "right":
-                return cells[y][x + 1];
+                cell = cells[this.y][this.x + 1];
+                break;
             default:
                 throw TypeError("wrong direction selected");
         }
-    }
-    getNextCell(direction) {
-        switch (direction) {
-            case "top":
-                return clone(next_cells[y - 1][x]);
-            case "bottom":
-                return clone(next_cells[y + 1][x]);
-            case "left":
-                return clone(next_cells[y][x - 1]);
-            case "right":
-                return clone(next_cells[y][x + 1]);
-            default:
-                throw TypeError("wrong direction selected");
-        }
+        return cell;
     }
 
 
@@ -215,6 +234,11 @@ function allocate_cells() { // works
     for (let y = 0; y < y_res; ++y) {
         for (let x = 0; x < x_res; ++x) {
             cells[y][x] = new Cell({
+                x,
+                y,
+                type: "ff"
+            });
+            next_cells[y][x] = new Cell({
                 x,
                 y,
                 type: "ff"
@@ -274,6 +298,12 @@ function deep(source) {
     return JSON.parse(JSON.stringify(source));
 }
 
-function Clone(arr) {
-    return arr.map((arr) => arr.slice());
+const _ = require('lodash');
+
+function Clone(from, to) {
+    for (let y = 0; y < y_res; ++y) {
+        for (let x = 0; x < x_res; ++x) {
+            to[y][x] = _.cloneDeep(from[y][x]); // TODO COPY CAT
+        }
+    }
 }
