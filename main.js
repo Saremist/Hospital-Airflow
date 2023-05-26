@@ -1,9 +1,9 @@
 // import structuredClone from '@ungap/structured-clone';
 
 let x_res = 100;
-let y_res = 100;
+let y_res = 50;
 let m_width = 800;
-let m_height = 800;
+let m_height = 400;
 let px_size_x = m_width / x_res;
 let px_size_y = m_height / y_res;
 let cells = initialize_arr(x_res, y_res, 0);
@@ -15,27 +15,30 @@ function setup() {
     allocate_cells();
     background(255);
     // square(60, 100, 20);
-    line(0, 0, 80, 80);
+    // line(0, 0, 400, 400);
     // fill(0);
-    // ellipse(200, 200, 161, 80);
+    ellipse(200, 200, 80, 80);
     find_walls();
     Clone(cells, next_cells);
-    frameRate(10);
+    frameRate(30);
 }
 
+let line_x = 300, line_y = m_height/2;
+let cell_x = Math.round(line_x/m_width*x_res), cell_y = Math.round(line_y/m_height*y_res);
 
 function draw() {
     draw_grid();
     // if (frameCount > 10)
     //     noLoop();
-    console.log("frame{frameCount}");
+    // console.log("frame{frameCount}");
+    // console.log(frameRate());
     for (let y = 0; y < y_res; ++y) {
         for (let x = 0; x < x_res; ++x) {
             cells[y][x].updateFlow();
         }
     }
-    console.log(cells[10][1]);
-    console.log(cells[11][1]);
+
+    line(line_x, line_y, line_x + 100 * cells[cell_y][cell_x].getVelocity('v'), line_y + 100 * cells[cell_y][cell_x].getVelocity('h'));
     Clone(next_cells, cells);
 }
 
@@ -93,7 +96,8 @@ class Cell {
                 return [0, 255, 0, 255];
             case 'ff':
                 // return (this.getEdgesCount() * 255 /4 );
-                return (this.getDiv()*5* 255);
+                // return (this.getDiv() * 5 * 255);
+                return (this.getVelocity("v") * 255/4 + 255/2);
         }
     }
 
@@ -178,9 +182,11 @@ class Cell {
                 throw e;
             }
         }
-        
+
         try {
-            next_cells[this.y][this.x].flow_right += (div / edges) * this.over_relax;
+            if (this.x == x_res-1 || this.getCell("right").getType() == "ff" ){
+                next_cells[this.y][this.x].flow_right += (div / edges) * this.over_relax;
+            }
         } catch (e) {
             if (e instanceof TypeError) {} else {
                 throw e;
@@ -188,7 +194,8 @@ class Cell {
         }
 
         try {
-            next_cells[this.y][this.x].flow_bottom += (div / edges) * this.over_relax;
+            if (this.y == y_res-1 ||this.getCell("bottom").getType() == "ff")
+                next_cells[this.y][this.x].flow_bottom += (div / edges) * this.over_relax;
         } catch (e) {
             if (e instanceof TypeError) {} else {
                 throw e;
@@ -238,6 +245,17 @@ class Cell {
         return cell;
     }
 
+    getVelocity(direction = null) {
+        switch (direction) {
+            case null:
+                return [this.getFlow("left") + this.getFlow("right"), this.getFlow("top") + this.getFlow("bottom")];
+            case "v":
+                return this.getFlow("left") + this.getFlow("right");
+            case "h":
+                return this.getFlow("top") + this.getFlow("bottom");
+            }
+    }
+    
 
     getEdgesCount() { // work 
         // if (this.edges) return this.edges;
