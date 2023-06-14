@@ -547,6 +547,52 @@ function draw()
     }
 }
 
+//  function setObstacle(imagePath, reset) {
+//     var vx = 0.0;
+//     var vy = 0.0;
+
+//     if (!reset) {
+//         vx = (x - scene.obstacleX) / scene.dt;
+//         vy = (y - scene.obstacleY) / scene.dt;
+//     }
+
+//     scene.obstacleX = x;
+//     scene.obstacleY = y;
+//     var f = scene.fluid;
+//     var n = f.numY;
+
+//     try {
+//         const image = await Jimp.read(imagePath);
+
+//         for (var i = 1; i < f.numX - 2; i++) {
+//             for (var j = 1; j < f.numY - 2; j++) {
+//                 f.s[i * n + j] = 1.0;
+
+//                 var color = image.getPixelColor(i, j);
+//                 var red = Jimp.intToRGBA(color).r;
+//                 var green = Jimp.intToRGBA(color).g;
+//                 var blue = Jimp.intToRGBA(color).b;
+
+//                 if (red === 0 && green === 0 && blue === 0) {
+//                     f.s[i * n + j] = 0.0;
+//                     if (scene.sceneNr == 2)
+//                         f.m[i * n + j] = 0.5 + 0.5 * Math.sin(0.1 * scene.frameNr);
+//                     else
+//                         f.m[i * n + j] = 1.0;
+//                     f.u[i * n + j] = vx;
+//                     f.u[(i + 1) * n + j] = vx;
+//                     f.v[i * n + j] = vy;
+//                     f.v[i * n + j + 1] = vy;
+//                 }
+//             }
+//         }
+
+//         scene.showObstacle = true;
+//     } catch (error) {
+//         console.error('Error', error);
+//     }
+// }
+
 function setObstacle(x, y, reset) {
 
     var vx = 0.0;
