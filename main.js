@@ -1,8 +1,16 @@
-
 var canvas = document.getElementById("myCanvas");
 var c = canvas.getContext("2d");	
-canvas.width = window.innerWidth - 20;
 canvas.height = window.innerHeight - 100;
+canvas.width = window.innerWidth-3;
+
+const img = new Image(); // Create new img element
+img.src = "./mieszkanie.png"; // Set source path
+
+img.onload = () => {c.drawImage(img, 0, 0, canvas.width, canvas.height);};
+// document.body.appendChild(canvas);
+
+
+// canvas.height = canvas.width * (img.height / img.width);
 
 canvas.focus();
 
@@ -22,6 +30,16 @@ function cX(x) {
 
 function cY(y) {
     return canvas.height - y * cScale;
+}
+
+function loadBarier() {
+    c.drawImage(img, 0, 0, canvas.width, canvas.height);
+    var p = c.getImageData(x, y, 1, 1).data;
+    
+                    // if (p[0] <= 10 && p[1] <= 10 && p[2] <= 10 && p[3] != 0) {
+                    //     continue;
+                    // }
+
 }
 
 // ----------------- start of simulator ------------------------------
@@ -315,6 +333,7 @@ function setupScene(sceneNr = 0)
     for (var j = minJ; j < maxJ; j++)
         f.m[j] = 0.0;
 
+    // setObstacle("./mieszkanie.jpeg", true);
     setObstacle(0.4, 0.5, true)
 
     scene.gravity = 0.0;
@@ -374,24 +393,25 @@ function getSciColor(val, minVal, maxVal) {
 
 function draw() 
 {
-    c.clearRect(0, 0, canvas.width, canvas.height);
-
+    // c.clearRect(0, 0, canvas.width, canvas.height);
+    
     c.fillStyle = "#FF0000";
     f = scene.fluid;
     n = f.numY;
-
+    
     var cellScale = 1.1;
-
+    
     var h = f.h;
-
+    
     minP = f.p[0];
     maxP = f.p[0];
-
+    
     for (var i = 0; i < f.numCells; i++) {
         minP = Math.min(minP, f.p[i]);
         maxP = Math.max(maxP, f.p[i]);
     }
-
+    
+    c.drawImage(img, 0, 0, canvas.width, canvas.height);
     id = c.getImageData(0,0, canvas.width, canvas.height)
 
     var color = [255, 255, 255, 255]
@@ -436,6 +456,7 @@ function draw()
                 var p = 4 * (yi * canvas.width + x)
 
                 for (var xi = 0; xi < cx; xi++) {
+                    if (id.data[p + 2] != 0) continue; // TODO poprawny warunek
                     id.data[p++] = r;
                     id.data[p++] = g;
                     id.data[p++] = b;
@@ -479,40 +500,7 @@ function draw()
 
             }
         }
-    }
 
-    if (scene.showStreamlines) {
-
-        var segLen = f.h * 0.2;
-        var numSegs = 15;
-
-        c.strokeStyle = "#000000";
-
-        for (var i = 1; i < f.numX - 1; i += 5) {
-            for (var j = 1; j < f.numY - 1; j += 5) {
-
-                var x = (i + 0.5) * f.h;
-                var y = (j + 0.5) * f.h;
-
-                c.beginPath();
-                c.moveTo(cX(x), cY(y));
-
-                for (var n = 0; n < numSegs; n++) {
-                    var u = f.sampleField(x, y, U_FIELD);
-                    var v = f.sampleField(x, y, V_FIELD);
-                    l = Math.sqrt(u*u + v*v);
-                    // x += u/l * segLen;
-                    // y += v/l * segLen;
-                    x += u * 0.01;
-                    y += v * 0.01;
-                    if (x > f.numX * f.h)
-                        break;
-
-                    c.lineTo(cX(x), cY(y));
-                }
-                c.stroke();
-            }
-        }
     }
 
     if (scene.showObstacle) {
@@ -545,24 +533,25 @@ function draw()
         c.font = "16px Arial";
         c.fillText(s, 10, 35);
     }
+    // c.drawImage(img, 0, 0, canvas.width, canvas.height);
 }
 
-//  function setObstacle(imagePath, reset) {
+//  async function setObstacle(imagePath, reset) {
 //     var vx = 0.0;
 //     var vy = 0.0;
 
-//     if (!reset) {
-//         vx = (x - scene.obstacleX) / scene.dt;
-//         vy = (y - scene.obstacleY) / scene.dt;
-//     }
+//     // if (!reset) {
+//     //     vx = (x - scene.obstacleX) / scene.dt;
+//     //     vy = (y - scene.obstacleY) / scene.dt;
+//     // }
 
-//     scene.obstacleX = x;
-//     scene.obstacleY = y;
+//     // scene.obstacleX = x;
+//     // scene.obstacleY = y;
 //     var f = scene.fluid;
 //     var n = f.numY;
 
 //     try {
-//         const image = await Jimp.read(imagePath);
+//         // const image = await Jimp.read(imagePath);
 
 //         for (var i = 1; i < f.numX - 2; i++) {
 //             for (var j = 1; j < f.numY - 2; j++) {
@@ -573,7 +562,7 @@ function draw()
 //                 var green = Jimp.intToRGBA(color).g;
 //                 var blue = Jimp.intToRGBA(color).b;
 
-//                 if (red === 0 && green === 0 && blue === 0) {
+//                 if (red <= 100 && green <= 100 && blue <= 100) {
 //                     f.s[i * n + j] = 0.0;
 //                     if (scene.sceneNr == 2)
 //                         f.m[i * n + j] = 0.5 + 0.5 * Math.sin(0.1 * scene.frameNr);
@@ -639,29 +628,29 @@ function setObstacle(x, y, reset) {
 
 var mouseDown = false;
 
-function startDrag(x, y) {
-    let bounds = canvas.getBoundingClientRect();
+// function startDrag(x, y) {
+//     let bounds = canvas.getBoundingClientRect();
 
-    let mx = x - bounds.left - canvas.clientLeft;
-    let my = y - bounds.top - canvas.clientTop;
-    mouseDown = true;
+//     let mx = x - bounds.left - canvas.clientLeft;
+//     let my = y - bounds.top - canvas.clientTop;
+//     mouseDown = true;
 
-    x = mx / cScale;
-    y = (canvas.height - my) / cScale;
+//     x = mx / cScale;
+//     y = (canvas.height - my) / cScale;
 
-    setObstacle(x,y, true);
-}
+//     setObstacle(x,y, true);
+// }
 
-function drag(x, y) {
-    if (mouseDown) {
-        let bounds = canvas.getBoundingClientRect();
-        let mx = x - bounds.left - canvas.clientLeft;
-        let my = y - bounds.top - canvas.clientTop;
-        x = mx / cScale;
-        y = (canvas.height - my) / cScale;
-        setObstacle(x,y, false);
-    }
-}
+// function drag(x, y) {
+//     if (mouseDown) {
+//         let bounds = canvas.getBoundingClientRect();
+//         let mx = x - bounds.left - canvas.clientLeft;
+//         let my = y - bounds.top - canvas.clientTop;
+//         x = mx / cScale;
+//         y = (canvas.height - my) / cScale;
+//         setObstacle(x,y, false);
+//     }
+// }
 
 
 
