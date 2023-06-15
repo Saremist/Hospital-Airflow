@@ -12,7 +12,11 @@ img.onload = () => {c.drawImage(img, 0, 0, canvas.width, canvas.height);};
 canvas.focus();
 
 
-let barrierArray = new Boolean[canvas.width][canvas.height]; //x y convention to be maintained
+// let barrierArray = new Boolean[canvas.width][canvas.height]; //x y convention to be maintained
+let barrierArray = [];
+for (let i = 0; i < canvas.width; i++) {
+  barrierArray[i] = new Array(canvas.height).fill(false);
+}
 var simHeight = 1.1;	
 var cScale = canvas.height / simHeight;
 var simWidth = canvas.width / cScale;
