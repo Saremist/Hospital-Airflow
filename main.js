@@ -47,7 +47,8 @@ function loadBarier() {
     let dimx = canvas.width;
     let dimy = canvas.height;
     f = scene.fluid;
-    initBarrierArray(f.numX, f.numY);
+    // initBarrierArray(f.numX, f.numY);
+    initBarrierArray(dimx, dimy);
     
     
     c.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -55,8 +56,10 @@ function loadBarier() {
 
     var h = f.h;
     id = c.getImageData(0, 0, canvas.width, canvas.height)
-    for (var i = 0; i < f.numX; i++) {
-        for (var j = 0; j < f.numY; j++) {
+    // for (var i = 0; i < f.numX; i++) {
+        // for (var j = 0; j < f.numY; j++) {
+    for (var i = 0; i < dimx; i++) {
+        for (var j = 0; j < dimy; j++) {
             var x = Math.floor(cX(i * h));
             var y = Math.floor(cY((j + 1) * h));
             var cx = Math.floor(cScale * cellScale * h) + 1;
@@ -553,7 +556,7 @@ function loadBarier() {
 
 
         function setObstacle() {
-
+            // var imgData = c.getImageData(0, 0, canvas.width, canvas.height);
             var vx = 0.0;
             var vy = 0.0;
 
@@ -566,6 +569,11 @@ function loadBarier() {
 
                     f.s[i * n + j] = 1.0;
 
+                    // var pixelIndex = (i * canvas.width + j) * 4;
+                    // var red = imgData.data[pixelIndex];
+                    // var green = imgData.data[pixelIndex + 1];
+                    // var blue = imgData.data[pixelIndex + 2];
+                    // if (red == 0 && green == 0 && blue == 255) {
                     if (barrierArray[i][j] == true) {
                         f.s[i * n + j] = 0.0;
                         if (scene.sceneNr == 2)
