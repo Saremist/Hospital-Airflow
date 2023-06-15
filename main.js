@@ -8,12 +8,11 @@ img.src = "./mieszkanie.png"; // Set source path
 
 img.onload = () => {c.drawImage(img, 0, 0, canvas.width, canvas.height);};
 // document.body.appendChild(canvas);
-
-
 // canvas.height = canvas.width * (img.height / img.width);
-
 canvas.focus();
 
+
+let barrierArray = new Boolean[canvas.width][canvas.height]; //x y convention to be maintained
 var simHeight = 1.1;	
 var cScale = canvas.height / simHeight;
 var simWidth = canvas.width / cScale;
