@@ -340,6 +340,8 @@ function setupScene(sceneNr = 0)
     for (var j = minJ; j < maxJ; j++)
         f.m[j] = 0.0;
 
+    
+    loadBarier();
     setObstacle();
     // setObstacle(0.4, 0.5, true)
 
