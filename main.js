@@ -32,13 +32,17 @@ function cY(y) {
 }
 
 function loadBarier() {
-    c.drawImage(img, 0, 0, canvas.width, canvas.height);
-    var p = c.getImageData(x, y, 1, 1).data;
-    
-                    // if (p[0] <= 10 && p[1] <= 10 && p[2] <= 10 && p[3] != 0) {
-                    //     continue;
-                    // }
+    var x = canvas.width;
+    var y = canvas.height;
 
+    for (var i = 0; i < x; i++) {
+        for (var j = 0; j < y; j++) {
+            var p = c.getImageData(i, j, 1, 1).data;
+            if (p[0] == 0 && p[1] == 0 && p[2] == 255) {
+                barrierArray[i][j] = true;
+            }
+        }
+    }
 }
 
 // ----------------- start of simulator ------------------------------
