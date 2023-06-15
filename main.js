@@ -283,8 +283,6 @@ var scene =
     paused: false,
     sceneNr: 0,
     showObstacle: false,
-    showStreamlines: false,
-    showVelocities: false,	
     showPressure: false,
     showSmoke: true,
     fluid: null
@@ -349,7 +347,6 @@ function setupScene(sceneNr = 0)
     scene.showPressure = false;
     scene.showSmoke = true;
     scene.showStreamlines = false;
-    scene.showVelocities = false;
 
     if (sceneNr == 3) {
         scene.dt = 1.0 / 120.0;
@@ -358,7 +355,6 @@ function setupScene(sceneNr = 0)
     }
 
     
-    document.getElementById("velocityButton").checked = scene.showVelocities;
     document.getElementById("pressureButton").checked = scene.showPressure;
     document.getElementById("smokeButton").checked = scene.showSmoke;
     document.getElementById("overrelaxButton").checked = scene.overRelaxation > 1.0;
@@ -475,40 +471,6 @@ function draw()
 
     c.putImageData(id, 0, 0);
 
-    if (scene.showVelocities) {
-
-        c.strokeStyle = "#000000";	
-        scale = 0.02;	
-
-        for (var i = 0; i < f.numX; i++) {
-            for (var j = 0; j < f.numY; j++) {
-
-                var u = f.u[i*n + j];
-                var v = f.v[i*n + j];
-
-                c.beginPath();
-
-                x0 = cX(i * h);
-                x1 = cX(i * h + u * scale);
-                y = cY((j + 0.5) * h );
-
-                c.moveTo(x0, y);
-                c.lineTo(x1, y);
-                c.stroke();
-
-                x = cX((i + 0.5) * h);
-                y0 = cY(j * h );
-                y1 = cY(j * h + v * scale)
-
-                c.beginPath();
-                c.moveTo(x, y0);
-                c.lineTo(x, y1);
-                c.stroke();
-
-            }
-        }
-
-    }
 
     if (scene.showObstacle) {
 
