@@ -14,9 +14,6 @@ canvas.focus();
 
 // let barrierArray = new Boolean[canvas.width][canvas.height]; //x y convention to be maintained
 let barrierArray = [];
-for (let i = 0; i < canvas.width; i++) {
-  barrierArray[i] = new Array(canvas.height).fill(false);
-}
 var simHeight = 1.1;	
 var cScale = canvas.height / simHeight;
 var simWidth = canvas.width / cScale;
@@ -36,8 +33,12 @@ function cY(y) {
 }
 
 function loadBarier() {
-    var x = canvas.width;
-    var y = canvas.height;
+    let x= canvas.width;
+    let y= canvas.height;
+
+    for (let i = 0; i < x; i++) {
+      barrierArray[i] = new Array(y).fill(false);
+    }
 
     for (var i = 0; i < x; i++) {
         for (var j = 0; j < y; j++) {
@@ -506,19 +507,11 @@ function draw()
 }
 
 
-function setObstacle(x, y, reset) {
+function setObstacle() {
 
     var vx = 0.0;
     var vy = 0.0;
 
-    if (!reset) {
-        vx = (x - scene.obstacleX) / scene.dt;
-        vy = (y - scene.obstacleY) / scene.dt;
-    }
-
-    scene.obstacleX = x;
-    scene.obstacleY = y;
-    var r = scene.obstacleRadius;
     var f = scene.fluid;
     var n = f.numY;
     var cd = Math.sqrt(2) * f.h;
@@ -528,10 +521,7 @@ function setObstacle(x, y, reset) {
 
             f.s[i*n + j] = 1.0;
 
-            dx = (i + 0.5) * f.h - x;
-            dy = (j + 0.5) * f.h - y;
-
-            if (dx * dx + dy * dy < r * r) {
+            if (barrierArray[i][j]) {
                 f.s[i*n + j] = 0.0;
                 if (scene.sceneNr == 2) 
                     f.m[i*n + j] = 0.5 + 0.5 * Math.sin(0.1 * scene.frameNr)
@@ -544,8 +534,6 @@ function setObstacle(x, y, reset) {
             }
         }
     }
-    
-    scene.showObstacle = true;
 }
 
 
