@@ -11,8 +11,6 @@ img.onload = () => {c.drawImage(img, 0, 0, canvas.width, canvas.height);};
 // canvas.height = canvas.width * (img.height / img.width);
 canvas.focus();
 
-
-// let barrierArray = new Boolean[canvas.width][canvas.height]; //x y convention to be maintained
 let barrierArray = [];
 for (let i = 0; i < canvas.width; i++) {
   barrierArray[i] = new Array(canvas.height).fill(false);
@@ -36,17 +34,13 @@ function cY(y) {
 }
 
 function loadBarier() {
-    var x = canvas.width;
-    var y = canvas.height;
+    c.drawImage(img, 0, 0, canvas.width, canvas.height);
+    var p = c.getImageData(x, y, 1, 1).data;
+    
+                    // if (p[0] <= 10 && p[1] <= 10 && p[2] <= 10 && p[3] != 0) {
+                    //     continue;
+                    // }
 
-    for (var i = 0; i < x; i++) {
-        for (var j = 0; j < y; j++) {
-            var p = c.getImageData(i, j, 1, 1).data;
-            if (p[0] == 0 && p[1] == 0 && p[2] == 255) {
-                barrierArray[i][j] = true;
-            }
-        }
-    }
 }
 
 // ----------------- start of simulator ------------------------------
@@ -340,8 +334,6 @@ function setupScene(sceneNr = 0)
     for (var j = minJ; j < maxJ; j++)
         f.m[j] = 0.0;
 
-    
-    loadBarier();
     setObstacle();
     // setObstacle(0.4, 0.5, true)
 
@@ -560,10 +552,10 @@ function setObstacle() {
 
             f.s[i * n + j] = 1.0;
 
-            dx = (i + 0.5) * f.h - x;
-            dy = (j + 0.5) * f.h - y;
+            // dx = (i + 0.5) * f.h - x;
+            // dy = (j + 0.5) * f.h - y;
 
-            if (barrierArray[dx][dy]) { // if hitting wall deflect
+            if (barrierArray[i][j]) { // if hitting wall deflect
                 f.s[i * n + j] = 0.0;
                 if (scene.sceneNr == 2)
                     f.m[i * n + j] = 0.5 + 0.5 * Math.sin(0.1 * scene.frameNr)
@@ -582,6 +574,7 @@ function setObstacle() {
 // interaction -------------------------------------------------------
 
 var mouseDown = false;
+
 
 
 // main -------------------------------------------------------
