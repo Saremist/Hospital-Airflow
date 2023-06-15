@@ -342,8 +342,8 @@ function setupScene(sceneNr = 0)
 
     
     loadBarier();
-    setObstacle();
-    // setObstacle(0.4, 0.5, true)
+    // setObstacle();
+    setObstacle(0.4, 0.5, true)
 
     scene.gravity = 0.0;
     scene.showPressure = false;
@@ -358,8 +358,6 @@ function setupScene(sceneNr = 0)
     }
 
     
-
-    document.getElementById("streamButton").checked = scene.showStreamlines;
     document.getElementById("velocityButton").checked = scene.showVelocities;
     document.getElementById("pressureButton").checked = scene.showPressure;
     document.getElementById("smokeButton").checked = scene.showSmoke;
@@ -465,7 +463,7 @@ function draw()
                 var p = 4 * (yi * canvas.width + x)
 
                 for (var xi = 0; xi < cx; xi++) {
-                    if (id.data[p + 2] != 0) continue; // TODO poprawny warunek
+                    if (id.data[p]==0 && id.data[p+1]==0 && id.data[p + 2] == 255) continue; // TODO poprawny warunek
                     id.data[p++] = r;
                     id.data[p++] = g;
                     id.data[p++] = b;
@@ -546,38 +544,49 @@ function draw()
 }
 
 
-function setObstacle() {
+function setObstacle(x, y, reset) {
 
     var vx = 0.0;
     var vy = 0.0;
 
+    if (!reset) {
+        vx = (x - scene.obstacleX) / scene.dt;
+        vy = (y - scene.obstacleY) / scene.dt;
+    }
+
+    scene.obstacleX = x;
+    scene.obstacleY = y;
+    var r = scene.obstacleRadius;
     var f = scene.fluid;
     var n = f.numY;
     var cd = Math.sqrt(2) * f.h;
 
-    for (var i = 1; i < f.numX - 2; i++) {
-        for (var j = 1; j < f.numY - 2; j++) {
+    for (var i = 1; i < f.numX-2; i++) {
+        for (var j = 1; j < f.numY-2; j++) {
 
-            f.s[i * n + j] = 1.0;
+            f.s[i*n + j] = 1.0;
 
             dx = (i + 0.5) * f.h - x;
             dy = (j + 0.5) * f.h - y;
 
-            if (barrierArray[dx][dy]) { // if hitting wall deflect
-                f.s[i * n + j] = 0.0;
-                if (scene.sceneNr == 2)
-                    f.m[i * n + j] = 0.5 + 0.5 * Math.sin(0.1 * scene.frameNr)
-                else
-                    f.m[i * n + j] = 1.0;
-                f.u[i * n + j] = vx;
-                f.u[(i + 1) * n + j] = vx;
-                f.v[i * n + j] = vy;
-                f.v[i * n + j + 1] = vy;
+            if (dx * dx + dy * dy < r * r) {
+                f.s[i*n + j] = 0.0;
+                if (scene.sceneNr == 2) 
+                    f.m[i*n + j] = 0.5 + 0.5 * Math.sin(0.1 * scene.frameNr)
+                else 
+                    f.m[i*n + j] = 1.0;
+                f.u[i*n + j] = vx;
+                f.u[(i+1)*n + j] = vx;
+                f.v[i*n + j] = vy;
+                f.v[i*n + j+1] = vy;
             }
         }
     }
+    
     scene.showObstacle = true;
 }
+
+
 
 // interaction -------------------------------------------------------
 
