@@ -463,7 +463,7 @@ function draw()
                 var p = 4 * (yi * canvas.width + x)
 
                 for (var xi = 0; xi < cx; xi++) {
-                    if (id.data[p]==0 && id.data[p+1]==0 && id.data[p + 2] == 255) continue; // TODO poprawny warunek
+                    if (id.data[p] == 0 && id.data[p+1] == 0 && id.data[p + 2] == 255) continue;
                     id.data[p++] = r;
                     id.data[p++] = g;
                     id.data[p++] = b;
