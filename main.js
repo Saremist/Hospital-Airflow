@@ -332,8 +332,8 @@ function setupScene(sceneNr = 0)
     for (var j = minJ; j < maxJ; j++)
         f.m[j] = 0.0;
 
-    // setObstacle("./mieszkanie.jpeg", true);
-    setObstacle(0.4, 0.5, true)
+    setObstacle();
+    // setObstacle(0.4, 0.5, true)
 
     scene.gravity = 0.0;
     scene.showPressure = false;
@@ -535,122 +535,43 @@ function draw()
     // c.drawImage(img, 0, 0, canvas.width, canvas.height);
 }
 
-//  async function setObstacle(imagePath, reset) {
-//     var vx = 0.0;
-//     var vy = 0.0;
 
-//     // if (!reset) {
-//     //     vx = (x - scene.obstacleX) / scene.dt;
-//     //     vy = (y - scene.obstacleY) / scene.dt;
-//     // }
-
-//     // scene.obstacleX = x;
-//     // scene.obstacleY = y;
-//     var f = scene.fluid;
-//     var n = f.numY;
-
-//     try {
-//         // const image = await Jimp.read(imagePath);
-
-//         for (var i = 1; i < f.numX - 2; i++) {
-//             for (var j = 1; j < f.numY - 2; j++) {
-//                 f.s[i * n + j] = 1.0;
-
-//                 var color = image.getPixelColor(i, j);
-//                 var red = Jimp.intToRGBA(color).r;
-//                 var green = Jimp.intToRGBA(color).g;
-//                 var blue = Jimp.intToRGBA(color).b;
-
-//                 if (red <= 100 && green <= 100 && blue <= 100) {
-//                     f.s[i * n + j] = 0.0;
-//                     if (scene.sceneNr == 2)
-//                         f.m[i * n + j] = 0.5 + 0.5 * Math.sin(0.1 * scene.frameNr);
-//                     else
-//                         f.m[i * n + j] = 1.0;
-//                     f.u[i * n + j] = vx;
-//                     f.u[(i + 1) * n + j] = vx;
-//                     f.v[i * n + j] = vy;
-//                     f.v[i * n + j + 1] = vy;
-//                 }
-//             }
-//         }
-
-//         scene.showObstacle = true;
-//     } catch (error) {
-//         console.error('Error', error);
-//     }
-// }
-
-function setObstacle(x, y, reset) {
+function setObstacle() {
 
     var vx = 0.0;
     var vy = 0.0;
 
-    if (!reset) {
-        vx = (x - scene.obstacleX) / scene.dt;
-        vy = (y - scene.obstacleY) / scene.dt;
-    }
-
-    scene.obstacleX = x;
-    scene.obstacleY = y;
-    var r = scene.obstacleRadius;
     var f = scene.fluid;
     var n = f.numY;
     var cd = Math.sqrt(2) * f.h;
 
-    for (var i = 1; i < f.numX-2; i++) {
-        for (var j = 1; j < f.numY-2; j++) {
+    for (var i = 1; i < f.numX - 2; i++) {
+        for (var j = 1; j < f.numY - 2; j++) {
 
-            f.s[i*n + j] = 1.0;
+            f.s[i * n + j] = 1.0;
 
             dx = (i + 0.5) * f.h - x;
             dy = (j + 0.5) * f.h - y;
 
-            if (dx * dx + dy * dy < r * r) {
-                f.s[i*n + j] = 0.0;
-                if (scene.sceneNr == 2) 
-                    f.m[i*n + j] = 0.5 + 0.5 * Math.sin(0.1 * scene.frameNr)
-                else 
-                    f.m[i*n + j] = 1.0;
-                f.u[i*n + j] = vx;
-                f.u[(i+1)*n + j] = vx;
-                f.v[i*n + j] = vy;
-                f.v[i*n + j+1] = vy;
+            if (barrierArray[dx][dy]) { // if hitting wall deflect
+                f.s[i * n + j] = 0.0;
+                if (scene.sceneNr == 2)
+                    f.m[i * n + j] = 0.5 + 0.5 * Math.sin(0.1 * scene.frameNr)
+                else
+                    f.m[i * n + j] = 1.0;
+                f.u[i * n + j] = vx;
+                f.u[(i + 1) * n + j] = vx;
+                f.v[i * n + j] = vy;
+                f.v[i * n + j + 1] = vy;
             }
         }
     }
-    
     scene.showObstacle = true;
 }
 
 // interaction -------------------------------------------------------
 
 var mouseDown = false;
-
-// function startDrag(x, y) {
-//     let bounds = canvas.getBoundingClientRect();
-
-//     let mx = x - bounds.left - canvas.clientLeft;
-//     let my = y - bounds.top - canvas.clientTop;
-//     mouseDown = true;
-
-//     x = mx / cScale;
-//     y = (canvas.height - my) / cScale;
-
-//     setObstacle(x,y, true);
-// }
-
-// function drag(x, y) {
-//     if (mouseDown) {
-//         let bounds = canvas.getBoundingClientRect();
-//         let mx = x - bounds.left - canvas.clientLeft;
-//         let my = y - bounds.top - canvas.clientTop;
-//         x = mx / cScale;
-//         y = (canvas.height - my) / cScale;
-//         setObstacle(x,y, false);
-//     }
-// }
-
 
 
 // main -------------------------------------------------------
