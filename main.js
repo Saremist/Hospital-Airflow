@@ -5,7 +5,8 @@ canvas.width = window.innerWidth - 3;
 
 const img = new Image(); // Create new img element
 // img.src = "./mieszkanie.png"; // Set source path 
-img.src = "./mieszkanieopen.png"; // Set source path 
+ img.src = "./mieszkanieopen.png"; // Set source path 
+//img.src = "./wing.png"; // Set source path 
 // img.src = "./test.png"; // Set source path
 
 
