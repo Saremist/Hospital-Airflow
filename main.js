@@ -4,14 +4,15 @@ canvas.height = window.innerHeight - 100;
 canvas.width = window.innerWidth - 3;
 
 const img = new Image(); // Create new img element
-img.src = "./mieszkanie.png"; // Set source path 
+// img.src = "./mieszkanie.png"; // Set source path 
+img.src = "./mieszkanieopen.png"; // Set source path 
 // img.src = "./test.png"; // Set source path
 
 
 let barrierArray = [];
 img.onload = () => {
-            new Promise(r => setTimeout(r, 1000));
-            c.drawImage(img, 0, 0, canvas.width, canvas.height);
+    new Promise(r => setTimeout(r, 1000));
+    c.drawImage(img, 0, 0, canvas.width, canvas.height);
 };
 // document.body.appendChild(canvas);
 // canvas.height = canvas.width * (img.height / img.width);
@@ -37,7 +38,7 @@ function cY(y) {
 }
 
 function initBarrierArray(dimx, dimy) {
-   barrierArray = new Array(1000).fill(0).map(() => new Array(1000).fill(false));
+    barrierArray = new Array(1000).fill(0).map(() => new Array(1000).fill(false));
     // for (let i = 0; i < dimx; i++) {
     //     barrierArray[i] = new Array(dimy).fill(false);
     // }
@@ -46,7 +47,7 @@ function initBarrierArray(dimx, dimy) {
 function loadBarier(id) {
     f = scene.fluid;
     var cellScale = 1.1;
-    var h = f.h;    
+    var h = f.h;
 
     // c.drawImage(img, 0, 0, canvas.width, canvas.height);
     // id = c.getImageData(0, 0, canvas.width, canvas.height).data;
@@ -62,483 +63,479 @@ function loadBarier(id) {
                 for (var xi = 0; xi < cx; xi++) {
                     if (id[p] == 0 && id[p + 1] == 0 && id[p + 2] == 255) {
                         barrierArray[i][j] = true;
-                        console.log("banana");
-                    }
-                    else p++;
+                    } else p++;
                 }
             }
         }
     }
 }
 
-        // ----------------- start of simulator ------------------------------
+// ----------------- start of simulator ------------------------------
 
-        class Fluid {
-            constructor(density, numX, numY, h) {
-                this.density = density;
-                this.numX = numX + 2;
-                this.numY = numY + 2;
-                this.numCells = this.numX * this.numY;
-                this.h = h;
-                this.u = new Float32Array(this.numCells);
-                this.v = new Float32Array(this.numCells);
-                this.newU = new Float32Array(this.numCells);
-                this.newV = new Float32Array(this.numCells);
-                this.p = new Float32Array(this.numCells);
-                this.s = new Float32Array(this.numCells);
-                this.m = new Float32Array(this.numCells);
-                this.newM = new Float32Array(this.numCells);
-                this.m.fill(1.0)
-                var num = numX * numY;
-            }
+class Fluid {
+    constructor(density, numX, numY, h) {
+        this.density = density;
+        this.numX = numX + 2;
+        this.numY = numY + 2;
+        this.numCells = this.numX * this.numY;
+        this.h = h;
+        this.u = new Float32Array(this.numCells);
+        this.v = new Float32Array(this.numCells);
+        this.newU = new Float32Array(this.numCells);
+        this.newV = new Float32Array(this.numCells);
+        this.p = new Float32Array(this.numCells);
+        this.s = new Float32Array(this.numCells);
+        this.m = new Float32Array(this.numCells);
+        this.newM = new Float32Array(this.numCells);
+        this.m.fill(1.0)
+        var num = numX * numY;
+    }
 
-            integrate(dt, gravity) {
-                var n = this.numY;
-                for (var i = 1; i < this.numX; i++) {
-                    for (var j = 1; j < this.numY - 1; j++) {
-                        if (this.s[i * n + j] != 0.0 && this.s[i * n + j - 1] != 0.0)
-                            this.v[i * n + j] += gravity * dt;
-                    }
-                }
-            }
-
-            solveIncompressibility(numIters, dt) {
-
-                var n = this.numY;
-                var cp = this.density * this.h / dt;
-
-                for (var iter = 0; iter < numIters; iter++) {
-
-                    for (var i = 1; i < this.numX - 1; i++) {
-                        for (var j = 1; j < this.numY - 1; j++) {
-
-                            if (this.s[i * n + j] == 0.0)
-                                continue;
-
-                            var s = this.s[i * n + j];
-                            var sx0 = this.s[(i - 1) * n + j];
-                            var sx1 = this.s[(i + 1) * n + j];
-                            var sy0 = this.s[i * n + j - 1];
-                            var sy1 = this.s[i * n + j + 1];
-                            var s = sx0 + sx1 + sy0 + sy1;
-                            if (s == 0.0)
-                                continue;
-
-                            var div = this.u[(i + 1) * n + j] - this.u[i * n + j] +
-                                this.v[i * n + j + 1] - this.v[i * n + j];
-
-                            var p = -div / s;
-                            p *= scene.overRelaxation;
-                            this.p[i * n + j] += cp * p;
-
-                            this.u[i * n + j] -= sx0 * p;
-                            this.u[(i + 1) * n + j] += sx1 * p;
-                            this.v[i * n + j] -= sy0 * p;
-                            this.v[i * n + j + 1] += sy1 * p;
-                        }
-                    }
-                }
-            }
-
-            extrapolate() {
-                var n = this.numY;
-                for (var i = 0; i < this.numX; i++) {
-                    this.u[i * n + 0] = this.u[i * n + 1];
-                    this.u[i * n + this.numY - 1] = this.u[i * n + this.numY - 2];
-                }
-                for (var j = 0; j < this.numY; j++) {
-                    this.v[0 * n + j] = this.v[1 * n + j];
-                    this.v[(this.numX - 1) * n + j] = this.v[(this.numX - 2) * n + j]
-                }
-            }
-
-            sampleField(x, y, field) {
-                var n = this.numY;
-                var h = this.h;
-                var h1 = 1.0 / h;
-                var h2 = 0.5 * h;
-
-                x = Math.max(Math.min(x, this.numX * h), h);
-                y = Math.max(Math.min(y, this.numY * h), h);
-
-                var dx = 0.0;
-                var dy = 0.0;
-
-                var f;
-
-                switch (field) {
-                    case U_FIELD:
-                        f = this.u;
-                        dy = h2;
-                        break;
-                    case V_FIELD:
-                        f = this.v;
-                        dx = h2;
-                        break;
-                    case S_FIELD:
-                        f = this.m;
-                        dx = h2;
-                        dy = h2;
-                        break
-
-                }
-
-                var x0 = Math.min(Math.floor((x - dx) * h1), this.numX - 1);
-                var tx = ((x - dx) - x0 * h) * h1;
-                var x1 = Math.min(x0 + 1, this.numX - 1);
-
-                var y0 = Math.min(Math.floor((y - dy) * h1), this.numY - 1);
-                var ty = ((y - dy) - y0 * h) * h1;
-                var y1 = Math.min(y0 + 1, this.numY - 1);
-
-                var sx = 1.0 - tx;
-                var sy = 1.0 - ty;
-
-                var val = sx * sy * f[x0 * n + y0] +
-                    tx * sy * f[x1 * n + y0] +
-                    tx * ty * f[x1 * n + y1] +
-                    sx * ty * f[x0 * n + y1];
-
-                return val;
-            }
-
-            avgU(i, j) {
-                var n = this.numY;
-                var u = (this.u[i * n + j - 1] + this.u[i * n + j] +
-                    this.u[(i + 1) * n + j - 1] + this.u[(i + 1) * n + j]) * 0.25;
-                return u;
-
-            }
-
-            avgV(i, j) {
-                var n = this.numY;
-                var v = (this.v[(i - 1) * n + j] + this.v[i * n + j] +
-                    this.v[(i - 1) * n + j + 1] + this.v[i * n + j + 1]) * 0.25;
-                return v;
-            }
-
-            advectVel(dt) {
-
-                this.newU.set(this.u);
-                this.newV.set(this.v);
-
-                var n = this.numY;
-                var h = this.h;
-                var h2 = 0.5 * h;
-
-                for (var i = 1; i < this.numX; i++) {
-                    for (var j = 1; j < this.numY; j++) {
-
-                        cnt++;
-
-                        // u component
-                        if (this.s[i * n + j] != 0.0 && this.s[(i - 1) * n + j] != 0.0 && j < this.numY - 1) {
-                            var x = i * h;
-                            var y = j * h + h2;
-                            var u = this.u[i * n + j];
-                            var v = this.avgV(i, j);
-                            //						var v = this.sampleField(x,y, V_FIELD);
-                            x = x - dt * u;
-                            y = y - dt * v;
-                            u = this.sampleField(x, y, U_FIELD);
-                            this.newU[i * n + j] = u;
-                        }
-                        // v component
-                        if (this.s[i * n + j] != 0.0 && this.s[i * n + j - 1] != 0.0 && i < this.numX - 1) {
-                            var x = i * h + h2;
-                            var y = j * h;
-                            var u = this.avgU(i, j);
-                            //						var u = this.sampleField(x,y, U_FIELD);
-                            var v = this.v[i * n + j];
-                            x = x - dt * u;
-                            y = y - dt * v;
-                            v = this.sampleField(x, y, V_FIELD);
-                            this.newV[i * n + j] = v;
-                        }
-                    }
-                }
-
-                this.u.set(this.newU);
-                this.v.set(this.newV);
-            }
-
-            advectSmoke(dt) {
-
-                this.newM.set(this.m);
-
-                var n = this.numY;
-                var h = this.h;
-                var h2 = 0.5 * h;
-
-                for (var i = 1; i < this.numX - 1; i++) {
-                    for (var j = 1; j < this.numY - 1; j++) {
-
-                        if (this.s[i * n + j] != 0.0) {
-                            var u = (this.u[i * n + j] + this.u[(i + 1) * n + j]) * 0.5;
-                            var v = (this.v[i * n + j] + this.v[i * n + j + 1]) * 0.5;
-                            var x = i * h + h2 - dt * u;
-                            var y = j * h + h2 - dt * v;
-
-                            this.newM[i * n + j] = this.sampleField(x, y, S_FIELD);
-                        }
-                    }
-                }
-                this.m.set(this.newM);
-            }
-
-            // ----------------- end of simulator ------------------------------
-
-
-            simulate(dt, gravity, numIters) {
-
-                this.integrate(dt, gravity);
-
-                this.p.fill(0.0);
-                this.solveIncompressibility(numIters, dt);
-
-                this.extrapolate();
-                this.advectVel(dt);
-                this.advectSmoke(dt);
+    integrate(dt, gravity) {
+        var n = this.numY;
+        for (var i = 1; i < this.numX; i++) {
+            for (var j = 1; j < this.numY - 1; j++) {
+                if (this.s[i * n + j] != 0.0 && this.s[i * n + j - 1] != 0.0)
+                    this.v[i * n + j] += gravity * dt;
             }
         }
+    }
 
-        var scene = {
-            gravity: -9.81,
-            dt: 1.0 / 120.0,
-            numIters: 100,
-            frameNr: 0,
-            overRelaxation: 1.9,
-            paused: false,
-            sceneNr: 0,
-            showPressure: false,
-            showSmoke: true,
-            fluid: null
-        };
+    solveIncompressibility(numIters, dt) {
 
-        function setupScene(sceneNr = 0) {
-            scene.sceneNr = sceneNr;
-            scene.obstacleRadius = 0.15;
-            scene.overRelaxation = 1.9;
+        var n = this.numY;
+        var cp = this.density * this.h / dt;
 
-            scene.dt = 1.0 / 60.0;
-            scene.numIters = 40;
+        for (var iter = 0; iter < numIters; iter++) {
 
-            var res = 100;
+            for (var i = 1; i < this.numX - 1; i++) {
+                for (var j = 1; j < this.numY - 1; j++) {
 
-            if (sceneNr == 0)
-                res = 50;
-            else if (sceneNr == 3)
-                res = 200;
+                    if (this.s[i * n + j] == 0.0)
+                        continue;
 
-            var domainHeight = 1.0;
-            var domainWidth = domainHeight / simHeight * simWidth;
-            var h = domainHeight / res;
+                    var s = this.s[i * n + j];
+                    var sx0 = this.s[(i - 1) * n + j];
+                    var sx1 = this.s[(i + 1) * n + j];
+                    var sy0 = this.s[i * n + j - 1];
+                    var sy1 = this.s[i * n + j + 1];
+                    var s = sx0 + sx1 + sy0 + sy1;
+                    if (s == 0.0)
+                        continue;
 
-            var numX = Math.floor(domainWidth / h);
-            var numY = Math.floor(domainHeight / h);
+                    var div = this.u[(i + 1) * n + j] - this.u[i * n + j] +
+                        this.v[i * n + j + 1] - this.v[i * n + j];
 
-            var density = 1000.0;
+                    var p = -div / s;
+                    p *= scene.overRelaxation;
+                    this.p[i * n + j] += cp * p;
 
-            f = scene.fluid = new Fluid(density, numX, numY, h);
-
-            var n = f.numY;
-
-            // vortex shedding
-            var inVel = 2.0;
-            for (var i = 0; i < f.numX; i++) {
-                for (var j = 0; j < f.numY; j++) {
-                    var s = 1.0; // fluid
-                    if (i == 0 || j == 0 || j == f.numY - 1)
-                        s = 0.0; // solid
-                    f.s[i * n + j] = s
-                    if (i == 1) {
-                        f.u[i * n + j] = inVel;
-                    }
+                    this.u[i * n + j] -= sx0 * p;
+                    this.u[(i + 1) * n + j] += sx1 * p;
+                    this.v[i * n + j] -= sy0 * p;
+                    this.v[i * n + j + 1] += sy1 * p;
                 }
             }
+        }
+    }
 
-            var pipeH = 0.1 * f.numY;
-            var minJ = Math.floor(0.5 * f.numY - 0.5 * pipeH);
-            var maxJ = Math.floor(0.5 * f.numY + 0.5 * pipeH);
+    extrapolate() {
+        var n = this.numY;
+        for (var i = 0; i < this.numX; i++) {
+            this.u[i * n + 0] = this.u[i * n + 1];
+            this.u[i * n + this.numY - 1] = this.u[i * n + this.numY - 2];
+        }
+        for (var j = 0; j < this.numY; j++) {
+            this.v[0 * n + j] = this.v[1 * n + j];
+            this.v[(this.numX - 1) * n + j] = this.v[(this.numX - 2) * n + j]
+        }
+    }
 
-            for (var j = minJ; j < maxJ; j++)
-                f.m[j] = 0.0;
+    sampleField(x, y, field) {
+        var n = this.numY;
+        var h = this.h;
+        var h1 = 1.0 / h;
+        var h2 = 0.5 * h;
 
-            
-            initBarrierArray(f.numX, f.numY);
-            setObstacle();
-            // setObstacle(0.4, 0.5, true)
+        x = Math.max(Math.min(x, this.numX * h), h);
+        y = Math.max(Math.min(y, this.numY * h), h);
 
-            scene.gravity = 0.0;
-            scene.showPressure = false;
-            scene.showSmoke = true;
-            scene.showStreamlines = false;
+        var dx = 0.0;
+        var dy = 0.0;
 
-            if (sceneNr == 3) {
-                scene.dt = 1.0 / 120.0;
-                scene.numIters = 100;
-                scene.showPressure = true;
-            }
+        var f;
 
-
-            document.getElementById("pressureButton").checked = scene.showPressure;
-            document.getElementById("smokeButton").checked = scene.showSmoke;
-            document.getElementById("overrelaxButton").checked = scene.overRelaxation > 1.0;
+        switch (field) {
+            case U_FIELD:
+                f = this.u;
+                dy = h2;
+                break;
+            case V_FIELD:
+                f = this.v;
+                dx = h2;
+                break;
+            case S_FIELD:
+                f = this.m;
+                dx = h2;
+                dy = h2;
+                break
 
         }
 
+        var x0 = Math.min(Math.floor((x - dx) * h1), this.numX - 1);
+        var tx = ((x - dx) - x0 * h) * h1;
+        var x1 = Math.min(x0 + 1, this.numX - 1);
 
-        // draw -------------------------------------------------------
+        var y0 = Math.min(Math.floor((y - dy) * h1), this.numY - 1);
+        var ty = ((y - dy) - y0 * h) * h1;
+        var y1 = Math.min(y0 + 1, this.numY - 1);
 
-        function setColor(r, g, b) {
-            c.fillStyle = `rgb(
-        ${Math.floor(255*r)},
-        ${Math.floor(255*g)},
-        ${Math.floor(255*b)})`
-            c.strokeStyle = `rgb(
-        ${Math.floor(255*r)},
-        ${Math.floor(255*g)},
-        ${Math.floor(255*b)})`
-        }
+        var sx = 1.0 - tx;
+        var sy = 1.0 - ty;
 
-        function getSciColor(val, minVal, maxVal) {
-            val = Math.min(Math.max(val, minVal), maxVal - 0.0001);
-            var d = maxVal - minVal;
-            val = d == 0.0 ? 0.5 : (val - minVal) / d;
-            var m = 0.25;
-            var num = Math.floor(val / m);
-            var s = (val - num * m) / m;
-            var r, g, b;
+        var val = sx * sy * f[x0 * n + y0] +
+            tx * sy * f[x1 * n + y0] +
+            tx * ty * f[x1 * n + y1] +
+            sx * ty * f[x0 * n + y1];
 
-            switch (num) {
-                case 0:
-                    r = 0.0;
-                    g = s;
-                    b = 1.0;
-                    break;
-                case 1:
-                    r = 0.0;
-                    g = 1.0;
-                    b = 1.0 - s;
-                    break;
-                case 2:
-                    r = s;
-                    g = 1.0;
-                    b = 0.0;
-                    break;
-                case 3:
-                    r = 1.0;
-                    g = 1.0 - s;
-                    b = 0.0;
-                    break;
-            }
+        return val;
+    }
 
-            return [255 * r, 255 * g, 255 * b, 255]
-        }
+    avgU(i, j) {
+        var n = this.numY;
+        var u = (this.u[i * n + j - 1] + this.u[i * n + j] +
+            this.u[(i + 1) * n + j - 1] + this.u[(i + 1) * n + j]) * 0.25;
+        return u;
 
-        function draw() {
-            // c.clearRect(0, 0, canvas.width, canvas.height);
-            
-            c.fillStyle = "#FF0000";
-            f = scene.fluid;
-            n = f.numY;
-            
-            var cellScale = 1.1;
-            
-            var h = f.h;
-            
-            minP = f.p[0];
-            maxP = f.p[0];
-            
-            for (var i = 0; i < f.numCells; i++) {
-                minP = Math.min(minP, f.p[i]);
-                maxP = Math.max(maxP, f.p[i]);
-            }
-            
-            c.drawImage(img, 0, 0, canvas.width, canvas.height);
-            id = c.getImageData(0, 0, canvas.width, canvas.height)
-            
-            var color = [255, 255, 255, 255]
-            
-            for (var i = 0; i < f.numX; i++) {
-                for (var j = 0; j < f.numY; j++) {
-                    
-                    if (scene.showPressure) {
-                        var p = f.p[i * n + j];
-                        var s = f.m[i * n + j];
-                        color = getSciColor(p, minP, maxP);
-                        if (scene.showSmoke) {
-                            color[0] = Math.max(0.0, color[0] - 255 * s);
-                            color[1] = Math.max(0.0, color[1] - 255 * s);
-                            color[2] = Math.max(0.0, color[2] - 255 * s);
-                        }
-                    } else if (scene.showSmoke) {
-                        var s = f.m[i * n + j];
-                        color[0] = 255 * s;
-                        color[1] = 255 * s;
-                        color[2] = 255 * s;
-                        if (scene.sceneNr == 2)
-                        color = getSciColor(s, 0.0, 1.0);
-                    } else if (f.s[i * n + j] == 0.0) {
-                        color[0] = 0;
-                        color[1] = 0;
-                        color[2] = 0;
-                    }
-                    
-                    var x = Math.floor(cX(i * h));
-                    var y = Math.floor(cY((j + 1) * h));
-                    var cx = Math.floor(cScale * cellScale * h) + 1;
-                    var cy = Math.floor(cScale * cellScale * h) + 1;
+    }
 
-                    r = color[0];
-                    g = color[1];
-                    b = color[2];
+    avgV(i, j) {
+        var n = this.numY;
+        var v = (this.v[(i - 1) * n + j] + this.v[i * n + j] +
+            this.v[(i - 1) * n + j + 1] + this.v[i * n + j + 1]) * 0.25;
+        return v;
+    }
 
-                    for (var yi = y; yi < y + cy; yi++) {
-                        
-                        var p = 4 * (yi * canvas.width + x) 
-                        for (var xi = 0; xi < cx; xi++) {
-                            if (id.data[p] <= 10 && id.data[p + 1] <= 10 && id.data[p + 2] >= 240) {
-                                barrierArray[i][j] = true;
-                                continue;
-                            };
-                            id.data[p++] = r;
-                            id.data[p++] = g;
-                            id.data[p++] = b;
-                            id.data[p++] = 255;
-                        }
-                    }
+    advectVel(dt) {
+
+        this.newU.set(this.u);
+        this.newV.set(this.v);
+
+        var n = this.numY;
+        var h = this.h;
+        var h2 = 0.5 * h;
+
+        for (var i = 1; i < this.numX; i++) {
+            for (var j = 1; j < this.numY; j++) {
+
+                cnt++;
+
+                // u component
+                if (this.s[i * n + j] != 0.0 && this.s[(i - 1) * n + j] != 0.0 && j < this.numY - 1) {
+                    var x = i * h;
+                    var y = j * h + h2;
+                    var u = this.u[i * n + j];
+                    var v = this.avgV(i, j);
+                    //						var v = this.sampleField(x,y, V_FIELD);
+                    x = x - dt * u;
+                    y = y - dt * v;
+                    u = this.sampleField(x, y, U_FIELD);
+                    this.newU[i * n + j] = u;
+                }
+                // v component
+                if (this.s[i * n + j] != 0.0 && this.s[i * n + j - 1] != 0.0 && i < this.numX - 1) {
+                    var x = i * h + h2;
+                    var y = j * h;
+                    var u = this.avgU(i, j);
+                    //						var u = this.sampleField(x,y, U_FIELD);
+                    var v = this.v[i * n + j];
+                    x = x - dt * u;
+                    y = y - dt * v;
+                    v = this.sampleField(x, y, V_FIELD);
+                    this.newV[i * n + j] = v;
                 }
             }
+        }
 
-            c.putImageData(id, 0, 0);
+        this.u.set(this.newU);
+        this.v.set(this.newV);
+    }
+
+    advectSmoke(dt) {
+
+        this.newM.set(this.m);
+
+        var n = this.numY;
+        var h = this.h;
+        var h2 = 0.5 * h;
+
+        for (var i = 1; i < this.numX - 1; i++) {
+            for (var j = 1; j < this.numY - 1; j++) {
+
+                if (this.s[i * n + j] != 0.0) {
+                    var u = (this.u[i * n + j] + this.u[(i + 1) * n + j]) * 0.5;
+                    var v = (this.v[i * n + j] + this.v[i * n + j + 1]) * 0.5;
+                    var x = i * h + h2 - dt * u;
+                    var y = j * h + h2 - dt * v;
+
+                    this.newM[i * n + j] = this.sampleField(x, y, S_FIELD);
+                }
+            }
+        }
+        this.m.set(this.newM);
+    }
+
+    // ----------------- end of simulator ------------------------------
+
+
+    simulate(dt, gravity, numIters) {
+
+        this.integrate(dt, gravity);
+
+        this.p.fill(0.0);
+        this.solveIncompressibility(numIters, dt);
+
+        this.extrapolate();
+        this.advectVel(dt);
+        this.advectSmoke(dt);
+    }
+}
+
+var scene = {
+    gravity: -9.81,
+    dt: 1.0 / 120.0,
+    numIters: 100,
+    frameNr: 0,
+    overRelaxation: 1.9,
+    paused: false,
+    sceneNr: 0,
+    showPressure: false,
+    showSmoke: true,
+    fluid: null
+};
+
+async function setupScene(sceneNr = 0) { 
+    scene.sceneNr = sceneNr;
+    scene.obstacleRadius = 0.15;
+    scene.overRelaxation = 1.9;
+
+    scene.dt = 1.0 / 60.0;
+    scene.numIters = 40;
+
+    var res = 100;
+
+    if (sceneNr == 0)
+        res = 50;
+    else if (sceneNr == 3)
+        res = 200;
+
+    var domainHeight = 1.0;
+    var domainWidth = domainHeight / simHeight * simWidth;
+    var h = domainHeight / res;
+
+    var numX = Math.floor(domainWidth / h);
+    var numY = Math.floor(domainHeight / h);
+
+    var density = 1000.0;
+
+    f = scene.fluid = new Fluid(density, numX, numY, h);
+
+    var n = f.numY;
+
+    // vortex shedding
+    var inVel = 2.0;
+    for (var i = 0; i < f.numX; i++) {
+        for (var j = 0; j < f.numY; j++) {
+            var s = 1.0; // fluid
+            if (i == 0 || j == 0 || j == f.numY - 1)
+                s = 0.0; // solid
+            f.s[i * n + j] = s
+            if (i == 1) {
+                f.u[i * n + j] = inVel;
+            }
+        }
+    }
+
+    var pipeH = 0.1 * f.numY;
+    var minJ = Math.floor(0.5 * f.numY - 0.5 * pipeH);
+    var maxJ = Math.floor(0.5 * f.numY + 0.5 * pipeH);
+
+    for (var j = minJ; j < maxJ; j++)
+        f.m[j] = 0.0;
+
+
+    initBarrierArray(f.numX, f.numY);
+    setObstacle();
+    // setObstacle(0.4, 0.5, true)
+
+    scene.gravity = 0.0;
+    scene.showPressure = false;
+    scene.showSmoke = true;
+    scene.showStreamlines = false;
+
+    if (sceneNr == 3) {
+        scene.dt = 1.0 / 120.0;
+        scene.numIters = 100;
+        scene.showPressure = true;
+    }
+
+
+    document.getElementById("pressureButton").checked = scene.showPressure;
+    document.getElementById("smokeButton").checked = scene.showSmoke;
+    document.getElementById("overrelaxButton").checked = scene.overRelaxation > 1.0;
+    await sleep(3000);
+}
+
+
+// draw -------------------------------------------------------
+
+function setColor(r, g, b) {
+    c.fillStyle = `rgb(
+        ${Math.floor(250*r)},
+        ${Math.floor(250*g)},
+        ${Math.floor(250*b)})`
+    c.strokeStyle = `rgb(
+        ${Math.floor(250*r)},
+        ${Math.floor(250*g)},
+        ${Math.floor(250*b)})`
+}
+
+function getSciColor(val, minVal, maxVal) {
+    val = Math.min(Math.max(val, minVal), maxVal - 0.0001);
+    var d = maxVal - minVal;
+    val = d == 0.0 ? 0.5 : (val - minVal) / d;
+    var m = 0.25;
+    var num = Math.floor(val / m);
+    var s = (val - num * m) / m;
+    var r, g, b;
+
+    switch (num) {
+        case 0:
+            r = 0.0;
+            g = s;
+            b = 1.0;
+            break;
+        case 1:
+            r = 0.0;
+            g = 1.0;
+            b = 1.0 - s;
+            break;
+        case 2:
+            r = s;
+            g = 1.0;
+            b = 0.0;
+            break;
+        case 3:
+            r = 1.0;
+            g = 1.0 - s;
+            b = 0.0;
+            break;
+    }
+
+    return [250 * r, 250 * g, 250 * b, 255]
+}
+
+function draw() {
+    c.clearRect(0, 0, canvas.width, canvas.height);
+    c.fillStyle = "#FF0000";
+    f = scene.fluid;
+    n = f.numY;
+
+    var cellScale = 1.1;
+
+    var h = f.h;
+
+    minP = f.p[0];
+    maxP = f.p[0];
+
+    for (var i = 0; i < f.numCells; i++) {
+        minP = Math.min(minP, f.p[i]);
+        maxP = Math.max(maxP, f.p[i]);
+    }
+
+    c.drawImage(img, 0, 0, canvas.width, canvas.height);
+    id = c.getImageData(0, 0, canvas.width, canvas.height)
+
+    var color = [250, 250, 250, 255]
+
+    for (var i = 0; i < f.numX; i++) {
+        for (var j = 0; j < f.numY; j++) {
 
             if (scene.showPressure) {
-                var s = "pressure: " + minP.toFixed(0) + " - " + maxP.toFixed(0) + " N/m";
-                c.fillStyle = "#000000";
-                c.font = "16px Arial";
-                c.fillText(s, 10, 35);
+                var p = f.p[i * n + j];
+                var s = f.m[i * n + j];
+                color = getSciColor(p, minP, maxP);
+                if (scene.showSmoke) {
+                    color[0] = Math.max(0.0, color[0] - 250 * s);
+                    color[1] = Math.max(0.0, color[1] - 250 * s);
+                    color[2] = Math.max(0.0, color[2] - 250 * s);
+                }
+            } else if (scene.showSmoke) {
+                var s = f.m[i * n + j];
+                color[0] = 255 * s;
+                color[1] = 255 * s;
+                color[2] = 255 * s;
+                if (scene.sceneNr == 2)
+                    color = getSciColor(s, 0.0, 1.0);
+            } else if (f.s[i * n + j] == 0.0) {
+                color[0] = 0;
+                color[1] = 0;
+                color[2] = 0;
             }
-            // c.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            var x = Math.floor(cX(i * h));
+            var y = Math.floor(cY((j + 1) * h));
+            var cx = Math.floor(cScale * cellScale * h) + 1;
+            var cy = Math.floor(cScale * cellScale * h) + 1;
+
+            r = color[0];
+            g = color[1];
+            b = color[2];
+
+            for (var yi = y; yi < y + cy; yi++) {
+
+                var p = 4 * (yi * canvas.width + x)
+
+                for (var xi = 0; xi < cx; xi++) {
+                    if (id.data[p] <= 20 && id.data[p + 1] <= 20 && id.data[p + 2] > 250) {
+                        barrierArray[i][j] = true;
+                        break;
+                    };
+                    id.data[p++] = r;
+                    id.data[p++] = g;
+                    id.data[p++] = b;
+                    id.data[p++] = 255;
+                }
+            }
         }
+    }
+
+    c.putImageData(id, 0, 0);
+
+    if (scene.showPressure) {
+        var s = "pressure: " + minP.toFixed(0) + " - " + maxP.toFixed(0) + " N/m";
+        c.fillStyle = "#000000";
+        c.font = "16px Arial";
+        c.fillText(s, 10, 35);
+    }
+}
 
 
 function setObstacle() {
     var vx = 0.0;
     var vy = 0.0;
-    
+
     var f = scene.fluid;
     var n = f.numY;
     var cd = Math.sqrt(2) * f.h;
-    
+
     // var imgData = c.getImageData(0, 0, f.numX - 2, f.numY - 2);
-    
+
     for (var i = 1; i < f.numX - 2; i++) {
         for (var j = 1; j < f.numY - 2; j++) {
-            
+
             f.s[i * n + j] = 1.0;
             if (barrierArray[i][j]) {
-                console.log("wall");
                 f.s[i * n + j] = 0.0;
                 if (scene.sceneNr == 2)
                     f.m[i * n + j] = 0.5 + 0.5 * Math.sin(0.1 * scene.frameNr)
@@ -554,25 +551,24 @@ function setObstacle() {
 }
 
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-        // interaction -------------------------------------------------------
+// main -------------------------------------------------------
 
-        var mouseDown = false;
+function simulate() {
+    if (!scene.paused)
+        scene.fluid.simulate(scene.dt, scene.gravity, scene.numIters)
+    scene.frameNr++;
+}
 
+function update() {
+    simulate();
+    draw();
+    setObstacle();
+    requestAnimationFrame(update);
+}
 
-        // main -------------------------------------------------------
-
-        function simulate() {
-            if (!scene.paused)
-                scene.fluid.simulate(scene.dt, scene.gravity, scene.numIters)
-            scene.frameNr++;
-        }
-
-async function update() {
-            simulate();
-            draw();
-            requestAnimationFrame(update);
-        }
-
-        setupScene(1);
-        update();
+setupScene(1);
+update();
