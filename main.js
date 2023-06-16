@@ -4,13 +4,14 @@ canvas.height = window.innerHeight - 100;
 canvas.width = window.innerWidth - 3;
 
 const img = new Image(); // Create new img element
-img.src = "./mieszkanie.png"; // Set source path
+img.src = "./mieszkanie.png"; // Set source path 
 // img.src = "./test.png"; // Set source path
 
 
-var barrierArray = [];
+let barrierArray = [];
 img.onload = () => {
-    c.drawImage(img, 0, 0, canvas.width, canvas.height);
+            new Promise(r => setTimeout(r, 1000));
+            c.drawImage(img, 0, 0, canvas.width, canvas.height);
 };
 // document.body.appendChild(canvas);
 // canvas.height = canvas.width * (img.height / img.width);
@@ -36,21 +37,20 @@ function cY(y) {
 }
 
 function initBarrierArray(dimx, dimy) {
-   barrierArray = new Array(dimx).fill(0).map(() => new Array(dimy).fill(0));
+   barrierArray = new Array(1000).fill(0).map(() => new Array(1000).fill(false));
     // for (let i = 0; i < dimx; i++) {
     //     barrierArray[i] = new Array(dimy).fill(false);
     // }
 }
 
-function loadBarier() {
+function loadBarier(id) {
     f = scene.fluid;
-    initBarrierArray(f.numX, f.numY);
-    
-    c.drawImage(img, 0, 0, canvas.width, canvas.height);
     var cellScale = 1.1;
+    var h = f.h;    
 
-    var h = f.h;
-    id = c.getImageData(0, 0, canvas.width, canvas.height)
+    // c.drawImage(img, 0, 0, canvas.width, canvas.height);
+    // id = c.getImageData(0, 0, canvas.width, canvas.height).data;
+
     for (var i = 0; i < f.numX; i++) {
         for (var j = 0; j < f.numY; j++) {
             var x = Math.floor(cX(i * h));
@@ -58,14 +58,13 @@ function loadBarier() {
             var cx = Math.floor(cScale * cellScale * h) + 1;
             var cy = Math.floor(cScale * cellScale * h) + 1;
             for (var yi = y; yi < y + cy; yi++) {
-                var p = 4 * (yi * canvas.width + x)
-
+                var p = 4 * (yi * canvas.width + x);
                 for (var xi = 0; xi < cx; xi++) {
-                    if (id.data[p] == 0 && id.data[p + 1] == 0 && id.data[p + 2] == 255) {
+                    if (id[p] == 0 && id[p + 1] == 0 && id[p + 2] == 255) {
                         barrierArray[i][j] = true;
-                        // console.log(barrierArray[i][j]);
-                        // console.log("banana");
+                        console.log("banana");
                     }
+                    else p++;
                 }
             }
         }
@@ -309,12 +308,8 @@ function loadBarier() {
             numIters: 100,
             frameNr: 0,
             overRelaxation: 1.9,
-            obstacleX: 0.0,
-            obstacleY: 0.0,
-            obstacleRadius: 0.15,
             paused: false,
             sceneNr: 0,
-            showObstacle: false,
             showPressure: false,
             showSmoke: true,
             fluid: null
@@ -369,7 +364,8 @@ function loadBarier() {
             for (var j = minJ; j < maxJ; j++)
                 f.m[j] = 0.0;
 
-            loadBarier();
+            
+            initBarrierArray(f.numX, f.numY);
             setObstacle();
             // setObstacle(0.4, 0.5, true)
 
@@ -442,31 +438,31 @@ function loadBarier() {
 
         function draw() {
             // c.clearRect(0, 0, canvas.width, canvas.height);
-
+            
             c.fillStyle = "#FF0000";
             f = scene.fluid;
             n = f.numY;
-
+            
             var cellScale = 1.1;
-
+            
             var h = f.h;
-
+            
             minP = f.p[0];
             maxP = f.p[0];
-
+            
             for (var i = 0; i < f.numCells; i++) {
                 minP = Math.min(minP, f.p[i]);
                 maxP = Math.max(maxP, f.p[i]);
             }
-
+            
             c.drawImage(img, 0, 0, canvas.width, canvas.height);
             id = c.getImageData(0, 0, canvas.width, canvas.height)
-
+            
             var color = [255, 255, 255, 255]
-
+            
             for (var i = 0; i < f.numX; i++) {
                 for (var j = 0; j < f.numY; j++) {
-
+                    
                     if (scene.showPressure) {
                         var p = f.p[i * n + j];
                         var s = f.m[i * n + j];
@@ -482,13 +478,13 @@ function loadBarier() {
                         color[1] = 255 * s;
                         color[2] = 255 * s;
                         if (scene.sceneNr == 2)
-                            color = getSciColor(s, 0.0, 1.0);
+                        color = getSciColor(s, 0.0, 1.0);
                     } else if (f.s[i * n + j] == 0.0) {
                         color[0] = 0;
                         color[1] = 0;
                         color[2] = 0;
                     }
-
+                    
                     var x = Math.floor(cX(i * h));
                     var y = Math.floor(cY((j + 1) * h));
                     var cx = Math.floor(cScale * cellScale * h) + 1;
@@ -499,10 +495,13 @@ function loadBarier() {
                     b = color[2];
 
                     for (var yi = y; yi < y + cy; yi++) {
-                        var p = 4 * (yi * canvas.width + x)
-
+                        
+                        var p = 4 * (yi * canvas.width + x) 
                         for (var xi = 0; xi < cx; xi++) {
-                            if (id.data[p] == 0 && id.data[p + 1] == 0 && id.data[p + 2] == 255) continue;
+                            if (id.data[p] <= 10 && id.data[p + 1] <= 10 && id.data[p + 2] >= 240) {
+                                barrierArray[i][j] = true;
+                                continue;
+                            };
                             id.data[p++] = r;
                             id.data[p++] = g;
                             id.data[p++] = b;
@@ -549,40 +548,35 @@ function loadBarier() {
         }
 
 
-        function setObstacle() {
-            var vx = 0.0;
-            var vy = 0.0;
-
-            var f = scene.fluid;
-            var n = f.numY;
-            var cd = Math.sqrt(2) * f.h;
-
-            // var imgData = c.getImageData(0, 0, f.numX - 2, f.numY - 2);
-
-            for (var i = 1; i < f.numX - 2; i++) {
-                for (var j = 1; j < f.numY - 2; j++) {
-
-                    f.s[i * n + j] = 1.0;
-
-                    // var pixelIndex = (i * f.numX + j) * 4;
-                    // var red = imgData.data[pixelIndex];
-                    // var green = imgData.data[pixelIndex + 1];
-                    // var blue = imgData.data[pixelIndex + 2];
-                    // if (red == 0 && green == 0 && blue == 255) {
-                    if (barrierArray[i][j]) {
-                        f.s[i * n + j] = 0.0;
-                        if (scene.sceneNr == 2)
-                            f.m[i * n + j] = 0.5 + 0.5 * Math.sin(0.1 * scene.frameNr)
-                        else
-                            f.m[i * n + j] = 1.0;
-                        f.u[i * n + j] = vx;
-                        f.u[(i + 1) * n + j] = vx;
-                        f.v[i * n + j] = vy;
-                        f.v[i * n + j + 1] = vy;
-                    }
-                }
+function setObstacle() {
+    var vx = 0.0;
+    var vy = 0.0;
+    
+    var f = scene.fluid;
+    var n = f.numY;
+    var cd = Math.sqrt(2) * f.h;
+    
+    // var imgData = c.getImageData(0, 0, f.numX - 2, f.numY - 2);
+    
+    for (var i = 1; i < f.numX - 2; i++) {
+        for (var j = 1; j < f.numY - 2; j++) {
+            
+            f.s[i * n + j] = 1.0;
+            if (barrierArray[i][j]) {
+                console.log("wall");
+                f.s[i * n + j] = 0.0;
+                if (scene.sceneNr == 2)
+                    f.m[i * n + j] = 0.5 + 0.5 * Math.sin(0.1 * scene.frameNr)
+                else
+                    f.m[i * n + j] = 1.0;
+                f.u[i * n + j] = vx;
+                f.u[(i + 1) * n + j] = vx;
+                f.v[i * n + j] = vy;
+                f.v[i * n + j + 1] = vy;
             }
         }
+    }
+}
 
 
 
@@ -599,7 +593,7 @@ function loadBarier() {
             scene.frameNr++;
         }
 
-        function update() {
+async function update() {
             simulate();
             draw();
             requestAnimationFrame(update);
