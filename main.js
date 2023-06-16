@@ -8,10 +8,9 @@ img.src = "./mieszkanie.png"; // Set source path
 // img.src = "./test.png"; // Set source path
 
 
-let barrierArray = [];
+var barrierArray = [];
 img.onload = () => {
     c.drawImage(img, 0, 0, canvas.width, canvas.height);
-    loadBarier();
 };
 // document.body.appendChild(canvas);
 // canvas.height = canvas.width * (img.height / img.width);
@@ -37,19 +36,15 @@ function cY(y) {
 }
 
 function initBarrierArray(dimx, dimy) {
-
-    for (let i = 0; i < dimx; i++) {
-        barrierArray[i] = new Array(dimy).fill(false);
-    }
+   barrierArray = new Array(dimx).fill(0).map(() => new Array(dimy).fill(0));
+    // for (let i = 0; i < dimx; i++) {
+    //     barrierArray[i] = new Array(dimy).fill(false);
+    // }
 }
 
 function loadBarier() {
-    let dimx = canvas.width;
-    let dimy = canvas.height;
     f = scene.fluid;
     initBarrierArray(f.numX, f.numY);
-    // initBarrierArray(dimx, dimy);
-    
     
     c.drawImage(img, 0, 0, canvas.width, canvas.height);
     var cellScale = 1.1;
@@ -374,6 +369,7 @@ function loadBarier() {
             for (var j = minJ; j < maxJ; j++)
                 f.m[j] = 0.0;
 
+            loadBarier();
             setObstacle();
             // setObstacle(0.4, 0.5, true)
 
@@ -573,7 +569,7 @@ function loadBarier() {
                     // var green = imgData.data[pixelIndex + 1];
                     // var blue = imgData.data[pixelIndex + 2];
                     // if (red == 0 && green == 0 && blue == 255) {
-                    if (barrierArray[i][j] == true) {
+                    if (barrierArray[i][j]) {
                         f.s[i * n + j] = 0.0;
                         if (scene.sceneNr == 2)
                             f.m[i * n + j] = 0.5 + 0.5 * Math.sin(0.1 * scene.frameNr)
