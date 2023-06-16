@@ -4,7 +4,7 @@ canvas.height = window.innerHeight - 100;
 canvas.width = window.innerWidth - 3;
 
 const img = new Image(); // Create new img element
-let simnumber = 1;
+let simnumber = 4;
 switch (simnumber) {
     case 1:
         img.src = "./mieszkanie.png"; // Set source path 
@@ -16,7 +16,7 @@ switch (simnumber) {
         img.src = "./wing.png"; // Set source path 
         break;
     case 4:
-        img.src = "./mieszkanie.png"; // Set source path 
+        img.src = "./tesla.png"; // Set source path 
         break;
     case 5:
         img.src = "./mieszkanie.png"; // Set source path 
@@ -34,7 +34,7 @@ img.onload = () => {
 };
 canvas.focus();
 
-var simHeight = 1.1;
+var simHeight = 1;
 var cScale = canvas.height / simHeight;
 var simWidth = canvas.width / cScale;
 
