@@ -4,8 +4,8 @@ canvas.height = window.innerHeight - 100;
 canvas.width = window.innerWidth - 3;
 
 const img = new Image(); // Create new img element
-let simnumber = 5;
-switch (simnumber) {
+function selectImage (simnumber = 1) {
+    switch (simnumber) {
     case 1:
         img.src = "./mieszkanie.png"; // Set source path 
         break;
@@ -24,6 +24,7 @@ switch (simnumber) {
     default:
         img.src = "./test.png"; // Set source path
         break;
+}
 }
 
 
@@ -328,8 +329,12 @@ var scene = {
     showSmoke: true,
     fluid: null
 };
+function setSimulation() {
+    selectImage(parseInt(document.getElementById("sceneRange").value));
+    setupScene(1);
+}
 
-async function setupScene(sceneNr = 0) {
+function setupScene(sceneNr = 0) {
     scene.sceneNr = sceneNr;
     scene.obstacleRadius = 0.15;
     scene.overRelaxation = 1.9;
@@ -381,7 +386,6 @@ async function setupScene(sceneNr = 0) {
 
     initBarrierArray(f.numX, f.numY);
     setObstacle();
-    // setObstacle(0.4, 0.5, true)
 
     scene.gravity = 0.0;
     scene.showPressure = false;
@@ -391,14 +395,12 @@ async function setupScene(sceneNr = 0) {
     if (sceneNr == 3) {
         scene.dt = 1.0 / 120.0;
         scene.numIters = 100;
-        scene.showPressure = true;
     }
 
 
     document.getElementById("pressureButton").checked = scene.showPressure;
     document.getElementById("smokeButton").checked = scene.showSmoke;
     document.getElementById("overrelaxButton").checked = scene.overRelaxation > 1.0;
-    await sleep(3000);
 }
 
 
@@ -566,9 +568,6 @@ function setObstacle() {
 }
 
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 // main -------------------------------------------------------
 
@@ -586,4 +585,5 @@ function update() {
 }
 
 setupScene(1);
+selectImage(1);
 update();
