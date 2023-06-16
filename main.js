@@ -325,6 +325,7 @@ var scene = {
     overRelaxation: 1.9,
     paused: false,
     sceneNr: 0,
+    showStreamlines: false,
     showPressure: false,
     showSmoke: true,
     fluid: null
@@ -397,7 +398,7 @@ function setupScene(sceneNr = 0) {
         scene.numIters = 100;
     }
 
-
+    document.getElementById("streamButton").checked = scene.showStreamlines;
     document.getElementById("pressureButton").checked = scene.showPressure;
     document.getElementById("smokeButton").checked = scene.showSmoke;
     document.getElementById("overrelaxButton").checked = scene.overRelaxation > 1.0;
@@ -528,6 +529,40 @@ function draw() {
     }
 
     c.putImageData(id, 0, 0);
+
+    if (scene.showStreamlines) {
+
+        var segLen = f.h * 0.2;
+        var numSegs = 15;
+
+        c.strokeStyle = "#000000";
+
+        for (var i = 1; i < f.numX - 1; i += 5) {
+            for (var j = 1; j < f.numY - 1; j += 5) {
+
+                var x = (i + 0.5) * f.h;
+                var y = (j + 0.5) * f.h;
+
+                c.beginPath();
+                c.moveTo(cX(x), cY(y));
+
+                for (var n = 0; n < numSegs; n++) {
+                    var u = f.sampleField(x, y, U_FIELD);
+                    var v = f.sampleField(x, y, V_FIELD);
+                    l = Math.sqrt(u*u + v*v);
+                    // x += u/l * segLen;
+                    // y += v/l * segLen;
+                    x += u * 0.01;
+                    y += v * 0.01;
+                    if (x > f.numX * f.h)
+                        break;
+
+                    c.lineTo(cX(x), cY(y));
+                }
+                c.stroke();
+            }
+        }
+    }
 
     if (scene.showPressure) {
         var s = "pressure: " + minP.toFixed(0) + " - " + maxP.toFixed(0) + " N/m";
