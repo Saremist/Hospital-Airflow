@@ -4,7 +4,7 @@ canvas.height = window.innerHeight - 100;
 canvas.width = window.innerWidth - 3;
 
 const img = new Image(); // Create new img element
-let simnumber = 4;
+let simnumber = 5;
 switch (simnumber) {
     case 1:
         img.src = "./mieszkanie.png"; // Set source path 
@@ -19,7 +19,7 @@ switch (simnumber) {
         img.src = "./tesla.png"; // Set source path 
         break;
     case 5:
-        img.src = "./mieszkanie.png"; // Set source path 
+        img.src = "./teslareversed.png"; // Set source path 
         break;
     default:
         img.src = "./test.png"; // Set source path
