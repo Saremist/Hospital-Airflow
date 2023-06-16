@@ -7,22 +7,22 @@ const img = new Image(); // Create new img element
 function selectImage (simnumber = 1) {
     switch (simnumber) {
     case 1:
-        img.src = "./mieszkanie.png"; // Set source path 
+        img.src = "./pngs/mieszkanie.png"; // Set source path 
         break;
     case 2:
-        img.src = "./mieszkanieopen.png"; // Set source path 
+        img.src = "./pngs/mieszkanieopen.png"; // Set source path 
         break;
     case 3:
-        img.src = "./wing.png"; // Set source path 
+        img.src = "./pngs/wing.png"; // Set source path 
         break;
     case 4:
-        img.src = "./tesla.png"; // Set source path 
+        img.src = "./pngs/tesla.png"; // Set source path 
         break;
     case 5:
-        img.src = "./teslareversed.png"; // Set source path 
+        img.src = "./pngs/teslareversed.png"; // Set source path 
         break;
     default:
-        img.src = "./test.png"; // Set source path
+        img.src = "./pngs/test.png"; // Set source path
         break;
 }
 }
