@@ -513,31 +513,6 @@ function loadBarier(id) {
 
             c.putImageData(id, 0, 0);
 
-
-            if (scene.showObstacle) {
-
-                c.strokeW
-                r = scene.obstacleRadius + f.h;
-                if (scene.showPressure)
-                    c.fillStyle = "#000000";
-                else
-                    c.fillStyle = "#DDDDDD";
-                c.beginPath();
-                c.arc(
-                    cX(scene.obstacleX), cY(scene.obstacleY), cScale * r, 0.0, 2.0 * Math.PI);
-                c.closePath();
-                c.fill();
-
-                c.lineWidth = 3.0;
-                c.strokeStyle = "#000000";
-                c.beginPath();
-                c.arc(
-                    cX(scene.obstacleX), cY(scene.obstacleY), cScale * r, 0.0, 2.0 * Math.PI);
-                c.closePath();
-                c.stroke();
-                c.lineWidth = 1.0;
-            }
-
             if (scene.showPressure) {
                 var s = "pressure: " + minP.toFixed(0) + " - " + maxP.toFixed(0) + " N/m";
                 c.fillStyle = "#000000";
