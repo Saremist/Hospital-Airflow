@@ -4,10 +4,27 @@ canvas.height = window.innerHeight - 100;
 canvas.width = window.innerWidth - 3;
 
 const img = new Image(); // Create new img element
-// img.src = "./mieszkanie.png"; // Set source path 
- img.src = "./mieszkanieopen.png"; // Set source path 
-//img.src = "./wing.png"; // Set source path 
-// img.src = "./test.png"; // Set source path
+let simnumber = 1;
+switch (simnumber) {
+    case 1:
+        img.src = "./mieszkanie.png"; // Set source path 
+        break;
+    case 2:
+        img.src = "./mieszkanieopen.png"; // Set source path 
+        break;
+    case 3:
+        img.src = "./wing.png"; // Set source path 
+        break;
+    case 4:
+        img.src = "./mieszkanie.png"; // Set source path 
+        break;
+    case 5:
+        img.src = "./mieszkanie.png"; // Set source path 
+        break;
+    default:
+        img.src = "./test.png"; // Set source path
+        break;
+}
 
 
 let barrierArray = [];
@@ -15,11 +32,8 @@ img.onload = () => {
     new Promise(r => setTimeout(r, 1000));
     c.drawImage(img, 0, 0, canvas.width, canvas.height);
 };
-// document.body.appendChild(canvas);
-// canvas.height = canvas.width * (img.height / img.width);
 canvas.focus();
 
-// let barrierArray = new Boolean[canvas.width][canvas.height]; //x y convention to be maintained
 var simHeight = 1.1;
 var cScale = canvas.height / simHeight;
 var simWidth = canvas.width / cScale;
@@ -315,7 +329,7 @@ var scene = {
     fluid: null
 };
 
-async function setupScene(sceneNr = 0) { 
+async function setupScene(sceneNr = 0) {
     scene.sceneNr = sceneNr;
     scene.obstacleRadius = 0.15;
     scene.overRelaxation = 1.9;
