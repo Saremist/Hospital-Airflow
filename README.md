@@ -1,5 +1,5 @@
 # Autorzy
-Paweł Rogóż 318714
+Paweł Rogóż 318714\
 Milan Wróblewski 313611
 
 # Obsługa programu
@@ -13,11 +13,11 @@ Otworzenie pliku index.html w przeglądarce internetowej
 # Dodawanie obrazów
 Aplikacja umożliwia dynamiczne dodawanie obrazów i ich wybór przy użyciu slidera w lewym górnym rogu strony
 ## Wymagania
-Aby aplikacja uznała dany piksel za przeszkodę, musi być on w kolorze niebieskim (0,0,255)
-Preferowany format pliku: **png**
+Aby aplikacja uznała dany piksel za przeszkodę, musi być on w kolorze niebieskim (0,0,255)\
+Preferowany format pliku: **png**\
 Preferowane wymiary pliku: **1600x900**
 ## Umieszczenie pliku
-Utworzony plik należy umieścić w folderze **pngs**
+Utworzony plik należy umieścić w folderze **pngs**\
 Należy również dodać następujący kod w pliku **main.js**
 ```sh
 case X: //X -> liczba, zgodnie z którą będzie wyświetlany obraz
