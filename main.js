@@ -21,6 +21,21 @@ function selectImage (simnumber = 1) {
     case 5:
         img.src = "./pngs/teslareversed.png"; // Set source path 
         break;
+    case 6:
+        img.src = "./pngs/page1.png"; // Set source path
+        break;
+    case 7:
+        img.src = "./pngs/page2.png"; // Set source path
+        break;
+    case 8:
+        img.src = "./pngs/hospital.png"; // Set source path
+        break;
+    case 9:
+        img.src = "./pngs/hospital2.png"; // Set source path
+        break;
+    case 10:
+        img.src = "./pngs/circle.png"; // Set source path
+        break;
     default:
         img.src = "./pngs/test.png"; // Set source path
         break;
