@@ -29,3 +29,9 @@ Projekt jest adapracją symulacji płynów:
 [oryginał](tenMinutePhysics/17-fluidSim.html)
 
 ![Przykład 1](examples/hospital_smoke.png)
+![Przykład 2](examples/mieszkanie_smoke.png)
+![Przykład 3.1](examples/tesla_closed.png)
+![Przykład 3.2](examples/tesla_open.png)
+![Przykład 4](examples/vortex_sheading.png)
+![Przykład 5.1](examples/wing_smoke.png)
+![Przykład 5.2](examples/wing_pressure.png)
