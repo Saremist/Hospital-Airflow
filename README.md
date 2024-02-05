@@ -1,6 +1,8 @@
 # Autorzy
 Paweł Rogóż 318714\
 Milan Wróblewski 313611
+Projekt jest adapracją symulacji płynów stworzonej przez tenMinutePhysics:
+[oryginał](tenMinutePhysics/17-fluidSim.html)
 
 # Obsługa programu
 ## Krok 1. Pobranie repozytorium
@@ -25,8 +27,6 @@ case X: //X -> liczba, zgodnie z którą będzie wyświetlany obraz
     break;
 ```
 
-Projekt jest adapracją symulacji płynów:
-[oryginał](tenMinutePhysics/17-fluidSim.html)
 
 ![Przykład 1](examples/hospital_smoke.png)
 ![Przykład 2](examples/mieszkanie_smoke2.png)
