@@ -5,7 +5,7 @@ Milan Wróblewski 313611
 # Obsługa programu
 ## Krok 1. Pobranie repozytorium
 ```sh
-git clone https://gitlab-stud.elka.pw.edu.pl/mwroblew/fo-hospital-airflow.git
+git clone [https://gitlab-stud.elka.pw.edu.pl/mwroblew/fo-hospital-airflow.git](https://github.com/Saremist/Hospital-Airflow.git)
 ```
 ## Krok 2. Uruchomienie programu
 Otworzenie pliku index.html w przeglądarce internetowej
