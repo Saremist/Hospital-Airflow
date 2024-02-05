@@ -8,7 +8,7 @@ Milan Wróblewski 313611
 git clone [https://gitlab-stud.elka.pw.edu.pl/mwroblew/fo-hospital-airflow.git](https://github.com/Saremist/Hospital-Airflow.git)
 ```
 ## Krok 2. Uruchomienie programu
-Otworzenie pliku index.html w przeglądarce internetowej
+Korzystając z rozrzerzenia liveserver do vscode umozliwić przeglądarce na dostęp do przygoptowanej aplikacji pod adresem localhost
 
 # Dodawanie obrazów
 Aplikacja umożliwia dynamiczne dodawanie obrazów i ich wybór przy użyciu slidera w lewym górnym rogu strony
@@ -19,13 +19,13 @@ Preferowane wymiary pliku: **1600x900**
 ## Umieszczenie pliku
 Utworzony plik należy umieścić w folderze **pngs**\
 Należy również dodać następujący kod w pliku **main.js**
-```sh
+```JavaScript
 case X: //X -> liczba, zgodnie z którą będzie wyświetlany obraz
     img.src = "./pngs/nazwa_pliku.png"; //nazwa_pliku -> nazwa wgranego obrazu
     break;
 ```
-# Dodane obrazy
-## tesla.png
-Plik obrazujący działanie zaworu tesli
-## hospital.png
-Plik przedstawia jeden z pawilonów w Szpitalu Bocheńskim
+
+Projekt jest adapracją symulacji płynów:
+[oryginał](tenMinutePhysics/17-fluidSim.html)
+
+![Przykład 1](examples/example1.png)
