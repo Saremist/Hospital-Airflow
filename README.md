@@ -28,4 +28,4 @@ case X: //X -> liczba, zgodnie z którą będzie wyświetlany obraz
 Projekt jest adapracją symulacji płynów:
 [oryginał](tenMinutePhysics/17-fluidSim.html)
 
-![Przykład 1](examples/example1.png)
+![Przykład 1](examples/hospital_smoke.png)
