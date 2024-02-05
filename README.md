@@ -1,6 +1,6 @@
 # Autorzy
 Paweł Rogóż 318714\
-Milan Wróblewski 313611
+Milan Wróblewski 313611\
 Projekt jest adapracją symulacji płynów stworzonej przez tenMinutePhysics:
 [oryginał](tenMinutePhysics/17-fluidSim.html)
 
